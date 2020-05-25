@@ -1,6 +1,6 @@
 {
   "name": "tic-tac-toe",
-  "description": "A web game that allows you to play against yourself or against a machine learning algorithm",
+  "description": "A web game that allows you to play against yourself and against a machine learning algorithm developed with tensorflow.js",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

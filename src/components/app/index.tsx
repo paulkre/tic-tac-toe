@@ -40,14 +40,14 @@ const Nav: React.FC<{ pages: Page[] }> = ({ pages }) => {
 export const App: React.FC = () => {
   const pages: Page[] = [
     {
-      path: "/pva",
-      Component: Pva,
-      title: "Against AI",
-    },
-    {
       path: "/pvp",
       Component: Pvp,
       title: "Against Yourself",
+    },
+    {
+      path: "/pva",
+      Component: Pva,
+      title: "Against AI",
     },
     {
       path: "/training",
@@ -65,7 +65,31 @@ export const App: React.FC = () => {
           </h1>
           <Nav pages={pages} />
           <Switch>
-            <Route path="/" exact component={Pva} />
+            <Route path="/" exact>
+              <p>
+                Welcome to my little tic tac toe game. The purpose of this
+                project was to get familiar with the development of machine
+                learning algorithms in tensorflow.js. On this website you can
+                either play against <Link to="/pvp">yourself</Link> or against a
+                very simple machine learning <Link to="/pva">algorithm</Link>.
+                If you want, you can even <Link to="/training">train</Link> your
+                own tensorflow model and download it. The source code is
+                available{" "}
+                <a
+                  href="https://github.com/paulkre/tic-tac-toe"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  here
+                </a>
+                .
+              </p>
+              <p className={styles.signature}>
+                —
+                <br />
+                Paul Kretschel
+              </p>
+            </Route>
             {pages.map(({ path, Component, title }, i) => (
               <Route path={path} key={i}>
                 <h2>{title}</h2>
