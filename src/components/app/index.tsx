@@ -33,7 +33,7 @@ export const App: React.FC = () => {
 
   return (
     <div className={styles.wrapper}>
-      <Router>
+      <Router basename={process.env.PUBLIC_URL}>
         <h1>
           <Link to="/">tic tac toe</Link>
         </h1>
@@ -45,9 +45,7 @@ export const App: React.FC = () => {
           ))}
         </nav>
         <Switch>
-          <Route path="/" exact>
-            <Pvp />
-          </Route>
+          <Route path="/" exact component={Pvp} />
           {pages.map(({ path, Component, title }, i) => (
             <Route path={path} key={i}>
               <h2>{title}</h2>
@@ -60,7 +58,6 @@ export const App: React.FC = () => {
           </Route>
         </Switch>
       </Router>
-      {/* <PvaGame id={gameId} onFinish={handleFinish} /> */}
     </div>
   );
 };
