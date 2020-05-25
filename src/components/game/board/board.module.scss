@@ -1,0 +1,49 @@
+.wrapper {
+  width: 100%;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background-color: #f8f8f8;
+  color: black;
+  box-sizing: content-box;
+
+  &:before {
+    content: "";
+    display: block;
+    padding-top: 100%;
+  }
+}
+
+.inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+
+  background-color: transparent;
+  transition: 0.2s ease background-color;
+}
+
+.draw {
+  background-color: rgba(255, 0, 0, 0.06);
+}
+
+.item {
+  width: 33.3333%;
+  height: 33.3333%;
+  box-sizing: border-box;
+  background-color: transparent;
+  transition: 0.2s ease background-color;
+}
+
+.wrapper,
+.item {
+  border: 1px solid black;
+}
+
+.highlighted {
+  background-color: rgba(0, 255, 255, 0.2);
+}
