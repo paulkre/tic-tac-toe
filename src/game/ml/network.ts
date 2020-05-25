@@ -9,7 +9,7 @@ export function createNetwork() {
     layers: [
       tf.layers.dense({
         inputShape: [9],
-        units: 32,
+        units: 64,
         activation: "relu",
       }),
       tf.layers.dense({
