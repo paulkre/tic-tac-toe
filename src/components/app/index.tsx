@@ -1,5 +1,11 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useLocation,
+} from "react-router-dom";
 
 import styles from "./app.module.scss";
 import { Pvp } from "./pvp";
@@ -12,17 +18,35 @@ type Page = {
   title: string;
 };
 
+const Nav: React.FC<{ pages: Page[] }> = ({ pages }) => {
+  const { pathname } = useLocation();
+
+  return (
+    <nav className={styles.nav}>
+      {pages.map(({ path, title }, i) => (
+        <Link
+          to={path}
+          className={pathname === path ? styles.activeLink : undefined}
+          key={i}
+        >
+          {title}
+        </Link>
+      ))}
+    </nav>
+  );
+};
+
 export const App: React.FC = () => {
   const pages: Page[] = [
     {
       path: "/pva",
       Component: Pva,
-      title: "Human vs AI",
+      title: "Against AI",
     },
     {
       path: "/pvp",
       Component: Pvp,
-      title: "Human vs Human",
+      title: "Against Yourself",
     },
     {
       path: "/training",
@@ -37,13 +61,7 @@ export const App: React.FC = () => {
         <h1>
           <Link to="/">tic tac toe</Link>
         </h1>
-        <nav className={styles.nav}>
-          {pages.map(({ path, title }, i) => (
-            <Link to={path} key={i}>
-              {title}
-            </Link>
-          ))}
-        </nav>
+        <Nav pages={pages} />
         <Switch>
           <Route path="/" exact component={Pvp} />
           {pages.map(({ path, Component, title }, i) => (
