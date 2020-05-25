@@ -11,6 +11,7 @@ import styles from "./app.module.scss";
 import { Pvp } from "./pvp";
 import { Pva } from "./pva";
 import { Training } from "./training";
+import { GithubLink } from "./gh-link";
 
 type Page = {
   path: string;
@@ -57,25 +58,28 @@ export const App: React.FC = () => {
 
   return (
     <div className={styles.wrapper}>
-      <Router basename={process.env.PUBLIC_URL}>
-        <h1>
-          <Link to="/">tic tac toe</Link>
-        </h1>
-        <Nav pages={pages} />
-        <Switch>
-          <Route path="/" exact component={Pvp} />
-          {pages.map(({ path, Component, title }, i) => (
-            <Route path={path} key={i}>
-              <h2>{title}</h2>
-              <Component />
+      <div className={styles.inner}>
+        <Router basename={process.env.PUBLIC_URL}>
+          <h1>
+            <Link to="/">tic tac toe</Link>
+          </h1>
+          <Nav pages={pages} />
+          <Switch>
+            <Route path="/" exact component={Pva} />
+            {pages.map(({ path, Component, title }, i) => (
+              <Route path={path} key={i}>
+                <h2>{title}</h2>
+                <Component />
+              </Route>
+            ))}
+            <Route>
+              <h2>404</h2>
+              <p>Page not found. :(</p>
             </Route>
-          ))}
-          <Route>
-            <h2>404</h2>
-            <p>Page not found. :(</p>
-          </Route>
-        </Switch>
-      </Router>
+          </Switch>
+        </Router>
+      </div>
+      <GithubLink />
     </div>
   );
 };

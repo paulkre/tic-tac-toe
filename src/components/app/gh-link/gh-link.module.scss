@@ -1,0 +1,26 @@
+.link {
+  display: block;
+  margin: 4rem auto 0;
+  width: 2rem;
+
+  & > img {
+    width: 100%;
+    height: auto;
+  }
+
+  opacity: 0.25;
+  &:hover {
+    opacity: 1;
+    @media (hover: none) {
+      opacity: 0.25;
+    }
+  }
+
+  @media (min-width: 800px) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1rem;
+    margin: 0;
+  }
+}
