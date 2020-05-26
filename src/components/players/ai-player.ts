@@ -29,6 +29,12 @@ export function useAiPlayer(id?: number): PlayerContainer {
 
           throw Error("Action prediction failed");
         },
+
+        onOponentPlay(state) {
+          model.predict(state).then((probs) => {
+            setProbabilities(probs);
+          });
+        },
       });
     });
   }, []);

@@ -24,14 +24,17 @@ export type BoardState = {
 };
 
 export type Player = {
-  play: (state: FieldState[], playerId: number) => Promise<number>;
-  onFinish?: (outcome: Outcome, isWinner: boolean) => void | Promise<void>;
+  play(state: FieldState[], playerId: number): Promise<number>;
+  onOponentPlay?(state: FieldState[]): void;
+  onFinish?(outcome: Outcome, isWinner: boolean): void | Promise<void>;
 };
 
 export const initialBoardState: BoardState = {
   fields: new Array(9).fill(FieldState.Empty),
   turn: 0,
 };
+
+const invertBoard = (state: number[]) => state.map((n) => -n);
 
 export async function runGame(
   player0: Player,
@@ -43,14 +46,17 @@ export async function runGame(
   async function handleAgent() {
     const playerId = boardState.turn % 2;
 
-    const isFirstPlayer = playerId === 0;
-    const symbol = isFirstPlayer ? FieldState.Cross : FieldState.Circle;
-    const { play } = isFirstPlayer ? player0 : player1;
+    const symbol = !playerId ? FieldState.Cross : FieldState.Circle;
+    const { play } = !playerId ? player0 : player1;
 
-    const action = await play(
-      playerId ? boardState.fields.map((n) => -n) : boardState.fields,
-      playerId
-    );
+    const normalizedState = playerId
+      ? invertBoard(boardState.fields)
+      : boardState.fields;
+
+    const { onOponentPlay } = !playerId ? player1 : player0;
+    if (onOponentPlay) onOponentPlay(normalizedState);
+
+    const action = await play(normalizedState, playerId);
 
     if (boardState.fields[action] !== FieldState.Empty)
       throw Error("Illegal move");
