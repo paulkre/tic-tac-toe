@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useLocation,
-} from "react-router-dom";
+import { HashRouter, Switch, Route, Link, useLocation } from "react-router-dom";
 
 import styles from "./app.module.scss";
 import { Pvp } from "./pvp";
@@ -59,7 +53,7 @@ export const App: React.FC = () => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.inner}>
-        <Router basename={process.env.PUBLIC_URL}>
+        <HashRouter>
           <h1>
             <Link to="/">tic tac toe</Link>
           </h1>
@@ -101,7 +95,7 @@ export const App: React.FC = () => {
               <p>Page not found. :(</p>
             </Route>
           </Switch>
-        </Router>
+        </HashRouter>
       </div>
       <GithubLink />
     </div>
