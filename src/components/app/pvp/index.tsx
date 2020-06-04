@@ -3,7 +3,7 @@ import React from "react";
 import { Game } from "../../game";
 import {
   useHumanPlayer,
-  PlayerControllerCtx,
+  PlayerControllerProvider,
 } from "../../players/human-player";
 import { GameRepeater } from "../../game/game-repeater";
 
@@ -14,10 +14,10 @@ export const Pvp: React.FC = () => {
   if (!p0.player || !p1.player) return null;
 
   return (
-    <PlayerControllerCtx.Provider value={p0.controller || p1.controller}>
+    <PlayerControllerProvider value={p0.controller || p1.controller}>
       <GameRepeater>
         <Game id={0} player0={p0.player} player1={p1.player} />
       </GameRepeater>
-    </PlayerControllerCtx.Provider>
+    </PlayerControllerProvider>
   );
 };

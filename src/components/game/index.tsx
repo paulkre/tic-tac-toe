@@ -17,21 +17,14 @@ type GameProps = {
   swapPlayers?: boolean;
 };
 
-export enum GameState {
-  Loading,
-  Ready,
-  Running,
-  Finished,
-}
-
 const BoardStateCtx = React.createContext<BoardState>(initialBoardState);
 export const useBoardState = () => React.useContext(BoardStateCtx);
 
 const GameOutcomeCtx = React.createContext<Outcome | null>(null);
 export const useGameOutcome = () => React.useContext(GameOutcomeCtx);
 
-const GameStateCtx = React.createContext<GameState>(GameState.Loading);
-export const useGameState = () => React.useContext(GameStateCtx);
+const GameIdCtx = React.createContext<number>(0);
+export const useGameId = () => React.useContext(GameIdCtx);
 
 export const Game: React.FC<GameProps> = ({
   id,
@@ -40,19 +33,15 @@ export const Game: React.FC<GameProps> = ({
   onFinish,
   swapPlayers,
 }) => {
-  const [gameState, setGameState] = React.useState<GameState>(
-    GameState.Loading
-  );
   const [boardState, setBoardState] = React.useState<BoardState>(
     initialBoardState
   );
   const [outcome, setOutcome] = React.useState<Outcome | null>(null);
 
   React.useEffect(() => {
-    if (gameState !== GameState.Ready) return;
+    let mounted = true;
 
     async function run() {
-      setGameState(GameState.Running);
       setBoardState(initialBoardState);
       setOutcome(null);
 
@@ -65,28 +54,31 @@ export const Game: React.FC<GameProps> = ({
         p1 = tmp;
       }
 
-      const newOutcome = await runGame(p0, p1, setBoardState);
+      const newOutcome = await runGame(p0, p1, (state) => {
+        if (mounted) setBoardState(state);
+      });
+      if (!mounted) return;
+
       setOutcome(newOutcome);
-      setGameState(GameState.Finished);
 
       if (onFinish)
         onFinish(id, newOutcome.winner && (newOutcome.winner.id ? p1 : p0));
     }
 
     run();
-  }, [id, gameState, player0, player1, onFinish, swapPlayers]);
 
-  React.useEffect(() => {
-    setGameState(GameState.Ready);
-  }, [id]);
+    return () => {
+      mounted = false;
+    };
+  }, [id, player0, player1, onFinish, swapPlayers]);
 
   return (
-    <GameStateCtx.Provider value={gameState}>
+    <GameIdCtx.Provider value={id}>
       <BoardStateCtx.Provider value={boardState}>
         <GameOutcomeCtx.Provider value={outcome}>
           <Board />
         </GameOutcomeCtx.Provider>
       </BoardStateCtx.Provider>
-    </GameStateCtx.Provider>
+    </GameIdCtx.Provider>
   );
 };

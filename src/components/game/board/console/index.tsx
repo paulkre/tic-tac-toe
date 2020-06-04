@@ -1,7 +1,7 @@
 import React from "react";
 
 import styles from "./console.module.scss";
-import { useGameOutcome, useGameState, GameState } from "../..";
+import { useGameOutcome, useGameId } from "../..";
 import { usePlayerController } from "../../../players/human-player";
 import { Outcome, FieldState } from "../../../../game";
 
@@ -38,7 +38,7 @@ export const Console: React.FC = () => {
     null
   );
   const outcome = useGameOutcome();
-  const gameState = useGameState();
+  const gameId = useGameId();
   const controller = usePlayerController();
 
   const [agentTimeout, setAgentTimeout] = React.useState<NodeJS.Timeout | null>(
@@ -46,9 +46,8 @@ export const Console: React.FC = () => {
   );
 
   React.useEffect(() => {
-    if (gameState !== GameState.Ready) return;
     setMessage(null);
-  }, [gameState]);
+  }, [gameId]);
 
   React.useEffect(() => {
     if (!outcome) return;

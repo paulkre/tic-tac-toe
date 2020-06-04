@@ -10,13 +10,28 @@ type HumanPlayerContainer = {
 export type PlayerController = {
   id: number;
   doAction(action: number): void;
-  giveUp?(): void;
+  release(): void;
 };
 
-export const PlayerControllerCtx = React.createContext<PlayerController | null>(
-  null
-);
+const PlayerControllerCtx = React.createContext<PlayerController | null>(null);
 export const usePlayerController = () => React.useContext(PlayerControllerCtx);
+
+export const PlayerControllerProvider: React.FC<{
+  value: PlayerController | null;
+}> = ({ children, value }) => {
+  React.useEffect(
+    () => () => {
+      value?.release();
+    },
+    [value]
+  );
+
+  return (
+    <PlayerControllerCtx.Provider value={value}>
+      {children}
+    </PlayerControllerCtx.Provider>
+  );
+};
 
 export function useHumanPlayer(): HumanPlayerContainer {
   const [player, setPlayer] = React.useState<Player | null>(null);
@@ -27,12 +42,20 @@ export function useHumanPlayer(): HumanPlayerContainer {
   React.useEffect(() => {
     setPlayer({
       play: (_state, id) =>
-        new Promise<number>((resolve) => {
+        new Promise<number>((resolve, reject) => {
+          let acted = false;
+
           setController({
             id,
+
             doAction(action) {
               setController(null);
+              acted = true;
               resolve(action);
+            },
+
+            release() {
+              if (!acted) reject();
             },
           });
         }),

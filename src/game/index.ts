@@ -71,18 +71,20 @@ export async function runGame(
   }
 
   async function getOutcome(): Promise<Outcome> {
-    while (boardState.turn < 9) {
-      await handleAgent();
+    try {
+      while (boardState.turn < 9) {
+        await handleAgent();
 
-      const winningFields = getWinningFields(boardState.fields);
-      if (winningFields)
-        return {
-          winner: {
-            id: boardState.fields[winningFields[0]],
-            fields: winningFields,
-          },
-        };
-    }
+        const winningFields = getWinningFields(boardState.fields);
+        if (winningFields)
+          return {
+            winner: {
+              id: boardState.fields[winningFields[0]],
+              fields: winningFields,
+            },
+          };
+      }
+    } catch {}
 
     return { winner: null };
   }
