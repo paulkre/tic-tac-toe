@@ -1,16 +1,23 @@
 import React from "react";
 
 import { Game } from "../../game";
-import { useHumanPlayer } from "../../players/human-player";
+import {
+  useHumanPlayer,
+  PlayerControllerCtx,
+} from "../../players/human-player";
 import { GameRepeater } from "../../game/game-repeater";
 
 export const Pvp: React.FC = () => {
   const p0 = useHumanPlayer();
   const p1 = useHumanPlayer();
 
+  if (!p0.player || !p1.player) return null;
+
   return (
-    <GameRepeater>
-      <Game id={0} player0={p0} player1={p1} />
-    </GameRepeater>
+    <PlayerControllerCtx.Provider value={p0.controller || p1.controller}>
+      <GameRepeater>
+        <Game id={0} player0={p0.player} player1={p1.player} />
+      </GameRepeater>
+    </PlayerControllerCtx.Provider>
   );
 };

@@ -1,12 +1,16 @@
 import React from "react";
 
-import { PlayerContainer } from "../game";
 import { Player } from "../../game";
 import { createAgent } from "../../game/ml/agent";
 
+type TrainingPlayerContainer = {
+  player: Player | null;
+  probabilities: number[];
+};
+
 const initialProbs: number[] = new Array(9).fill(0);
 
-export function useTrainingPlayer(id: number): PlayerContainer {
+export function useTrainingPlayer(id: number): TrainingPlayerContainer {
   const [player, setPlayer] = React.useState<Player | null>(null);
   const [probabilities, setProbabilities] = React.useState(initialProbs);
 

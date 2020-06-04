@@ -1,12 +1,8 @@
 import React from "react";
 
 import styles from "./console.module.scss";
-import {
-  useGameOutcome,
-  useGameState,
-  usePlayerController,
-  GameState,
-} from "../..";
+import { useGameOutcome, useGameState, GameState } from "../..";
+import { usePlayerController } from "../../../players/human-player";
 import { Outcome, FieldState } from "../../../../game";
 
 import crossImgUrl from "../field/cross.svg";

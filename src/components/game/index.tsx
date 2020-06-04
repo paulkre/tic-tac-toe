@@ -9,21 +9,10 @@ import {
 } from "../../game";
 import { Board } from "./board";
 
-export type PlayerController = {
-  id: number;
-  doAction(action: number): void;
-};
-
-export interface PlayerContainer {
-  player: Player | null;
-  controller?: PlayerController | null;
-  probabilities?: number[];
-}
-
 type GameProps = {
   id: number;
-  player0: PlayerContainer;
-  player1: PlayerContainer;
+  player0: Player;
+  player1: Player;
   onFinish?(id: number, winner: Player | null): void;
   swapPlayers?: boolean;
 };
@@ -34,12 +23,6 @@ export enum GameState {
   Running,
   Finished,
 }
-
-const PlayerControllerCtx = React.createContext<PlayerController | null>(null);
-export const usePlayerController = () => React.useContext(PlayerControllerCtx);
-
-const ProbsCtx = React.createContext<number[] | null>(null);
-export const useProbs = () => React.useContext(ProbsCtx);
 
 const BoardStateCtx = React.createContext<BoardState>(initialBoardState);
 export const useBoardState = () => React.useContext(BoardStateCtx);
@@ -73,8 +56,8 @@ export const Game: React.FC<GameProps> = ({
       setBoardState(initialBoardState);
       setOutcome(null);
 
-      let p0 = player0.player!;
-      let p1 = player1.player!;
+      let p0 = player0;
+      let p1 = player1;
 
       if (swapPlayers) {
         const tmp = p0;
@@ -91,27 +74,18 @@ export const Game: React.FC<GameProps> = ({
     }
 
     run();
-  }, [id, gameState, player0.player, player1.player, onFinish, swapPlayers]);
+  }, [id, gameState, player0, player1, onFinish, swapPlayers]);
 
   React.useEffect(() => {
-    if (!player0.player || !player1.player) return;
     setGameState(GameState.Ready);
-  }, [id, player0.player, player1.player]);
+  }, [id]);
 
   return (
     <GameStateCtx.Provider value={gameState}>
       <BoardStateCtx.Provider value={boardState}>
-        <PlayerControllerCtx.Provider
-          value={player0?.controller || player1?.controller || null}
-        >
-          <ProbsCtx.Provider
-            value={player0?.probabilities || player1?.probabilities || null}
-          >
-            <GameOutcomeCtx.Provider value={outcome}>
-              <Board />
-            </GameOutcomeCtx.Provider>
-          </ProbsCtx.Provider>
-        </PlayerControllerCtx.Provider>
+        <GameOutcomeCtx.Provider value={outcome}>
+          <Board />
+        </GameOutcomeCtx.Provider>
       </BoardStateCtx.Provider>
     </GameStateCtx.Provider>
   );

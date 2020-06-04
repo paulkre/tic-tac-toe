@@ -2,7 +2,9 @@ import React from "react";
 import cn from "classnames";
 
 import { FieldState } from "../../../../game";
-import { usePlayerController, useBoardState, useProbs } from "../..";
+import { useBoardState } from "../..";
+import { useProbs } from "../../../players/ai-player";
+import { usePlayerController } from "../../../players/human-player";
 import styles from "./field.module.scss";
 
 type FieldProps = { id: number; state: FieldState };

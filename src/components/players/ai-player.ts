@@ -1,12 +1,19 @@
 import React from "react";
 
-import { PlayerContainer } from "../game";
 import { Player, FieldState } from "../../game";
 import { createModel } from "../../game/ml/model";
 
+type AiPlayerContainer = {
+  player: Player | null;
+  probabilities: number[];
+};
+
+export const ProbsCtx = React.createContext<number[] | null>(null);
+export const useProbs = () => React.useContext(ProbsCtx);
+
 const initialProbs: number[] = new Array(9).fill(0);
 
-export function useAiPlayer(id?: number): PlayerContainer {
+export function useAiPlayer(id?: number): AiPlayerContainer {
   const [player, setPlayer] = React.useState<Player | null>(null);
   const [probabilities, setProbabilities] = React.useState(initialProbs);
 
