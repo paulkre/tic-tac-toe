@@ -1,16 +1,10 @@
 import React from "react";
 
-import {
-  createTrainingJob,
-  TOTAL_BATCH_COUNT,
-  TrainingJob,
-  JobState,
-} from "./job";
+import { useTrainingJob, TOTAL_BATCH_COUNT } from "./training-job";
 
 export const Training: React.FC = () => {
   const [data, setData] = React.useState<number[][][] | null>(null);
-  const [batchCount, setBatchCount] = React.useState(0);
-  const [job, setJob] = React.useState<TrainingJob | null>(null);
+  const job = useTrainingJob();
 
   React.useEffect(() => {
     if (data) return;
@@ -27,20 +21,9 @@ export const Training: React.FC = () => {
     };
   }, [data]);
 
-  React.useEffect(() => {
-    if (!job || job.getState() !== JobState.Idle) return;
-    job.start().then(() => {
-      if (job.getState() !== JobState.Stopped) {
-        setJob(null);
-        setBatchCount(0);
-      }
-    });
-    return () => job.stop();
-  }, [job]);
-
   function trainAndDownload() {
     if (!data) return;
-    setJob(createTrainingJob(setBatchCount, data));
+    job.setData([...data]);
   }
 
   return (
@@ -55,27 +38,19 @@ export const Training: React.FC = () => {
             <strong>{data.length}</strong> unique game states
           </p>
           <p>
-            <button onClick={trainAndDownload} disabled={!!job}>
+            <button onClick={trainAndDownload} disabled={job.running}>
               Train and download model
             </button>
           </p>
-          {batchCount > 0 && (
+          {job.batchCount > 0 && (
             <p>
-              Batches learned: {batchCount} / {TOTAL_BATCH_COUNT} (
-              {Math.round((batchCount / TOTAL_BATCH_COUNT) * 100)}%)
+              Batches learned: {job.batchCount} / {TOTAL_BATCH_COUNT} (
+              {Math.round((job.batchCount / TOTAL_BATCH_COUNT) * 100)}%)
             </p>
           )}
-          {!!job && job.getState() === JobState.Running && (
+          {job.running && (
             <p>
-              <button
-                onClick={() => {
-                  job.stop();
-                  setJob(null);
-                  setBatchCount(0);
-                }}
-              >
-                Stop training
-              </button>
+              <button onClick={() => job.setData(null)}>Stop training</button>
             </p>
           )}
         </>
