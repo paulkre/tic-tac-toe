@@ -2,11 +2,13 @@ import React from "react";
 
 type GameRepeaterProps = {
   pauseDuration?: number;
+  alternatePlayerOrder?: boolean;
 };
 
 export const GameRepeater: React.FC<GameRepeaterProps> = ({
   children,
   pauseDuration,
+  alternatePlayerOrder,
 }) => {
   const [gameCount, setGameCount] = React.useState(0);
   const [currentGameId, setCurrentGameId] = React.useState(0);
@@ -40,6 +42,7 @@ export const GameRepeater: React.FC<GameRepeaterProps> = ({
           React.cloneElement(child, {
             id: currentGameId,
             onFinish: handleFinish,
+            swapPlayers: alternatePlayerOrder && currentGameId % 2 === 1,
             key: i,
           })
       )}

@@ -25,6 +25,7 @@ type GameProps = {
   player0: PlayerContainer;
   player1: PlayerContainer;
   onFinish?(id: number, winner: Player | null): void;
+  swapPlayers?: boolean;
 };
 
 export enum GameState {
@@ -54,6 +55,7 @@ export const Game: React.FC<GameProps> = ({
   player0,
   player1,
   onFinish,
+  swapPlayers,
 }) => {
   const [gameState, setGameState] = React.useState<GameState>(
     GameState.Loading
@@ -71,9 +73,14 @@ export const Game: React.FC<GameProps> = ({
       setBoardState(initialBoardState);
       setOutcome(null);
 
-      const swap = Math.random() < 0.5;
-      const p0 = swap ? player1.player! : player0.player!;
-      const p1 = swap ? player0.player! : player1.player!;
+      let p0 = player0.player!;
+      let p1 = player1.player!;
+
+      if (swapPlayers) {
+        const tmp = p0;
+        p0 = p1;
+        p1 = tmp;
+      }
 
       const newOutcome = await runGame(p0, p1, setBoardState);
       setOutcome(newOutcome);
@@ -84,7 +91,7 @@ export const Game: React.FC<GameProps> = ({
     }
 
     run();
-  }, [id, gameState, player0.player, player1.player, onFinish]);
+  }, [id, gameState, player0.player, player1.player, onFinish, swapPlayers]);
 
   React.useEffect(() => {
     if (!player0.player || !player1.player) return;

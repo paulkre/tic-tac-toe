@@ -10,7 +10,7 @@ export const Pva: React.FC = () => {
   const ai = useAiPlayer();
 
   return (
-    <GameRepeater pauseDuration={2000}>
+    <GameRepeater pauseDuration={2000} alternatePlayerOrder={true}>
       <Game id={0} player0={human} player1={ai} />
     </GameRepeater>
   );
