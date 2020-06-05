@@ -1,0 +1,48 @@
+.wrapper {
+  position: relative;
+  margin: 2rem auto;
+
+  padding: 2.25rem 2rem 2rem;
+  border: 1px solid #808080;
+
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"] {
+    font-size: inherit;
+    padding: 0.25rem 0.3rem;
+  }
+
+  label {
+    padding-right: 1rem;
+  }
+
+  form > div:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+
+  button {
+    font-size: inherit;
+    padding: 0.5rem 0.75rem;
+
+    &:not([disabled]) {
+      cursor: pointer;
+    }
+  }
+}
+
+.title {
+  position: absolute;
+  left: 0;
+  top: -11px;
+  font-size: 18px;
+  color: #808080;
+  width: 100%;
+  user-select: none;
+}
+
+.titleInner {
+  display: inline-block;
+  background: #f0f0f0;
+  padding: 0 0.75rem;
+}

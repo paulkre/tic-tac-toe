@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Player, FieldState } from "../../game";
+import { Player, FieldState, GameAbortedException } from "../../game";
 import { createModel } from "../../game/ml/model";
 
 type AiPlayerContainer = {
@@ -18,10 +18,13 @@ export function useAiPlayer(id?: number): AiPlayerContainer {
   const [probabilities, setProbabilities] = React.useState(initialProbs);
 
   React.useEffect(() => {
+    let mounted = true;
+
     createModel().then((model) => {
       setPlayer({
         async getAction(state) {
           const probs = await model.predict(state);
+          if (!mounted) throw new GameAbortedException();
 
           setProbabilities(probs);
 
@@ -44,6 +47,10 @@ export function useAiPlayer(id?: number): AiPlayerContainer {
         },
       });
     });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   React.useEffect(() => {

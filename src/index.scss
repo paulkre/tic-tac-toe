@@ -51,12 +51,3 @@ a {
     color: rgb(0, 0, 238);
   }
 }
-
-button {
-  font-size: inherit;
-  padding: 0.5rem 0.75rem;
-
-  &:not([disabled]) {
-    cursor: pointer;
-  }
-}
