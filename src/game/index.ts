@@ -18,68 +18,61 @@ export type Game = {
   outcome: Outcome | null;
 };
 
-export type BoardState = {
-  fields: FieldState[];
-  turn: number;
-};
-
 export type Player = {
   play(state: FieldState[], playerId: number): Promise<number>;
   onOponentPlay?(state: FieldState[]): void;
   onFinish?(outcome: Outcome, isWinner: boolean): void | Promise<void>;
 };
 
-export const initialBoardState: BoardState = {
-  fields: new Array(9).fill(FieldState.Empty),
-  turn: 0,
+export const initialState = Array<FieldState>(9).fill(FieldState.Empty);
+
+const invertState = (state: FieldState[]) => state.map<FieldState>((n) => -n);
+
+type GameProps = {
+  player0: Player;
+  player1: Player;
+  onStateUpdate?: (state: FieldState[]) => void;
 };
 
-const invertBoard = (state: number[]) => state.map((n) => -n);
-
-export async function runGame(
-  player0: Player,
-  player1: Player,
-  onStateUpdate?: (state: BoardState) => void
-): Promise<Outcome> {
-  let boardState: BoardState = initialBoardState;
+export async function runGame({
+  player0,
+  player1,
+  onStateUpdate,
+}: GameProps): Promise<Outcome> {
+  const state: FieldState[] = [...initialState];
+  let turn: number = 0;
 
   async function handleAgent() {
-    const playerId = boardState.turn % 2;
+    const playerId = turn % 2;
 
     const symbol = !playerId ? FieldState.Cross : FieldState.Circle;
     const { play } = !playerId ? player0 : player1;
 
-    const normalizedState = playerId
-      ? invertBoard(boardState.fields)
-      : boardState.fields;
+    const normalizedState = playerId ? invertState(state) : state;
 
     const { onOponentPlay } = !playerId ? player1 : player0;
     if (onOponentPlay) onOponentPlay(normalizedState);
 
     const action = await play(normalizedState, playerId);
 
-    if (boardState.fields[action] !== FieldState.Empty)
-      throw Error("Illegal move");
+    if (state[action] !== FieldState.Empty) throw Error("Illegal move");
 
-    boardState = {
-      fields: [...boardState.fields],
-      turn: boardState.turn + 1,
-    };
-    boardState.fields[action] = symbol;
-
-    if (onStateUpdate) onStateUpdate(boardState);
+    state[action] = symbol;
   }
 
   async function getOutcome(): Promise<Outcome> {
     try {
-      while (boardState.turn < 9) {
+      while (turn < 9) {
         await handleAgent();
 
-        const winningFields = getWinningFields(boardState.fields);
+        turn++;
+        if (onStateUpdate) onStateUpdate([...state]);
+
+        const winningFields = getWinningFields(state);
         if (winningFields)
           return {
             winner: {
-              id: boardState.fields[winningFields[0]],
+              id: state[winningFields[0]],
               fields: winningFields,
             },
           };

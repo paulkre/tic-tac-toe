@@ -2,14 +2,14 @@ import React from "react";
 import cn from "classnames";
 
 import { Console } from "./console";
-import { useBoardState, useGameOutcome } from "..";
+import { useGameState, useGameOutcome } from "..";
 import styles from "./board.module.scss";
 import { Field } from "./field";
 
 export const createBoardState = () => new Uint8Array(9);
 
 export const Board: React.FC = () => {
-  const { fields } = useBoardState();
+  const { state } = useGameState();
   const outcome = useGameOutcome();
 
   return (
@@ -17,7 +17,7 @@ export const Board: React.FC = () => {
       <div
         className={cn(styles.inner, outcome && !outcome.winner && styles.draw)}
       >
-        {fields.map((n, i) => (
+        {state.map((n, i) => (
           <div
             className={cn(
               styles.item,

@@ -2,7 +2,7 @@ import React from "react";
 import cn from "classnames";
 
 import { FieldState } from "../../../../game";
-import { useBoardState } from "../..";
+import { useGameState } from "../..";
 import { useProbs } from "../../../players/ai-player";
 import { usePlayerController } from "../../../players/human-player";
 import styles from "./field.module.scss";
@@ -25,7 +25,7 @@ const mapTurnToStyle = (turn: number) =>
 
 export const Field: React.FC<FieldProps> = ({ id, state }) => {
   const humanController = usePlayerController();
-  const boardState = useBoardState();
+  const { turn } = useGameState();
   const probs = useProbs();
 
   const inner = (
@@ -34,7 +34,7 @@ export const Field: React.FC<FieldProps> = ({ id, state }) => {
         className={cn(
           styles.symbol,
           state !== FieldState.Empty && styles.visible,
-          mapStateToStyle(state) || mapTurnToStyle(boardState.turn)
+          mapStateToStyle(state) || mapTurnToStyle(turn)
         )}
       ></div>
       {probs && <div className={styles.prob}>{probs[id].toFixed(2)}</div>}

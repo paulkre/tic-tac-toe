@@ -1,12 +1,6 @@
 import React from "react";
 
-import {
-  runGame,
-  initialBoardState,
-  BoardState,
-  Outcome,
-  Player,
-} from "../../game";
+import { runGame, initialState, Outcome, Player } from "../../game";
 import { Board } from "./board";
 
 type GameProps = {
@@ -17,14 +11,27 @@ type GameProps = {
   swapPlayers?: boolean;
 };
 
-const BoardStateCtx = React.createContext<BoardState>(initialBoardState);
-export const useBoardState = () => React.useContext(BoardStateCtx);
+export type GameState = {
+  state: typeof initialState;
+  turn: number;
+};
+
+const initialGameState: GameState = {
+  state: initialState,
+  turn: 0,
+};
+
+const GameStateCtx = React.createContext<GameState>(initialGameState);
+export const useGameState = () => React.useContext(GameStateCtx);
 
 const GameOutcomeCtx = React.createContext<Outcome | null>(null);
 export const useGameOutcome = () => React.useContext(GameOutcomeCtx);
 
 const GameIdCtx = React.createContext<number>(0);
 export const useGameId = () => React.useContext(GameIdCtx);
+
+const getTurnId = (state: typeof initialState): number =>
+  state.reduce((acc, val) => Math.abs(acc) + Math.abs(val));
 
 export const Game: React.FC<GameProps> = ({
   id,
@@ -33,16 +40,14 @@ export const Game: React.FC<GameProps> = ({
   onFinish,
   swapPlayers,
 }) => {
-  const [boardState, setBoardState] = React.useState<BoardState>(
-    initialBoardState
-  );
+  const [gameState, setGameState] = React.useState<GameState>(initialGameState);
   const [outcome, setOutcome] = React.useState<Outcome | null>(null);
 
   React.useEffect(() => {
     let mounted = true;
 
     async function run() {
-      setBoardState(initialBoardState);
+      setGameState(initialGameState);
       setOutcome(null);
 
       let p0 = player0;
@@ -54,8 +59,16 @@ export const Game: React.FC<GameProps> = ({
         p1 = tmp;
       }
 
-      const newOutcome = await runGame(p0, p1, (state) => {
-        if (mounted) setBoardState(state);
+      const newOutcome = await runGame({
+        player0: p0,
+        player1: p1,
+        onStateUpdate: (state) => {
+          if (mounted)
+            setGameState({
+              state,
+              turn: getTurnId(state),
+            });
+        },
       });
       if (!mounted) return;
 
@@ -74,11 +87,11 @@ export const Game: React.FC<GameProps> = ({
 
   return (
     <GameIdCtx.Provider value={id}>
-      <BoardStateCtx.Provider value={boardState}>
+      <GameStateCtx.Provider value={gameState}>
         <GameOutcomeCtx.Provider value={outcome}>
           <Board />
         </GameOutcomeCtx.Provider>
-      </BoardStateCtx.Provider>
+      </GameStateCtx.Provider>
     </GameIdCtx.Provider>
   );
 };
