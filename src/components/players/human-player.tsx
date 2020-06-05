@@ -41,7 +41,7 @@ export function useHumanPlayer(): HumanPlayerContainer {
 
   React.useEffect(() => {
     setPlayer({
-      play: (_state, id) =>
+      getAction: (_state, id) =>
         new Promise<number>((resolve, reject) => {
           let acted = false;
 

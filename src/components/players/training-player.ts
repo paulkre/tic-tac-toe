@@ -17,7 +17,7 @@ export function useTrainingPlayer(id: number): TrainingPlayerContainer {
   React.useEffect(() => {
     createAgent().then((agent) => {
       setPlayer({
-        async play(state) {
+        async getAction(state) {
           const { action, probs } = await agent.predict(state);
           setProbabilities(probs);
 

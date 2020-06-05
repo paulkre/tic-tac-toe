@@ -2,7 +2,7 @@ import { Player } from "../../game";
 import { FieldState } from "../../game";
 
 export const randomPlayer: Player = {
-  async play(fields) {
+  async getAction(fields) {
     const legalActions = Array.from(fields.keys()).filter(
       (action) => fields[action] === FieldState.Empty
     );

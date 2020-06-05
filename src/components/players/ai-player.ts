@@ -20,7 +20,7 @@ export function useAiPlayer(id?: number): AiPlayerContainer {
   React.useEffect(() => {
     createModel().then((model) => {
       setPlayer({
-        async play(state) {
+        async getAction(state) {
           const probs = await model.predict(state);
 
           setProbabilities(probs);

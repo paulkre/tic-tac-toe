@@ -5,7 +5,7 @@ export enum FieldState {
 }
 
 export type Player = {
-  play(state: Int8Array, playerId: number): Promise<number>;
+  getAction(state: Int8Array, playerId: number): Promise<number>;
   onOponentPlay?(state: Int8Array): void;
   onFinish?(isWinner: boolean): void | Promise<void>;
 };
@@ -77,7 +77,7 @@ export async function runGame({
     const { onOponentPlay } = !playerId ? player1 : player0;
     if (onOponentPlay) onOponentPlay(normalizedState);
 
-    const action = await player.play(normalizedState, playerId);
+    const action = await player.getAction(normalizedState, playerId);
 
     if (state[action] !== FieldState.Empty) throw Error("Illegal move");
 
