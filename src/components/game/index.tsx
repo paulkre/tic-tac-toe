@@ -30,9 +30,6 @@ export const useGameOutcome = () => React.useContext(GameOutcomeCtx);
 const GameIdCtx = React.createContext<number>(0);
 export const useGameId = () => React.useContext(GameIdCtx);
 
-const getTurnId = (state: typeof initialState): number =>
-  state.reduce((acc, val) => Math.abs(acc) + Math.abs(val));
-
 export const Game: React.FC<GameProps> = ({
   id,
   player0,
@@ -59,15 +56,18 @@ export const Game: React.FC<GameProps> = ({
         p1 = tmp;
       }
 
+      let turn = 0;
       const newOutcome = await runGame({
         player0: p0,
         player1: p1,
         onStateUpdate: (state) => {
-          if (mounted)
-            setGameState({
-              state,
-              turn: getTurnId(state),
-            });
+          if (!mounted) return;
+
+          setGameState({
+            state,
+            turn,
+          });
+          turn++;
         },
       });
 
