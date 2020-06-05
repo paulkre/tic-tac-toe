@@ -1,28 +1,13 @@
-import { getWinningFields } from "./winning-fields";
-
 export enum FieldState {
   Empty = 0,
   Cross = 1,
   Circle = -1,
 }
 
-export interface Outcome {
-  winner: {
-    player: Player;
-    symbol: FieldState;
-    fields?: number[];
-  } | null;
-}
-
-export type Game = {
-  state: Int8Array;
-  outcome: Outcome | null;
-};
-
 export type Player = {
   play(state: Int8Array, playerId: number): Promise<number>;
   onOponentPlay?(state: Int8Array): void;
-  onFinish?(outcome: Outcome, isWinner: boolean): void | Promise<void>;
+  onFinish?(isWinner: boolean): void | Promise<void>;
 };
 
 export class GameAbortedException {}
@@ -34,7 +19,7 @@ const invertState = (state: Int8Array) => state.map((n) => -n);
 type GameProps = {
   player0: Player;
   player1: Player;
-  onStateUpdate?: (state: Int8Array) => void;
+  onStateUpdate?: (state: Int8Array, turn: number) => void;
 };
 
 type PlayerContainer = {
@@ -42,20 +27,33 @@ type PlayerContainer = {
   symbol: FieldState;
 };
 
-const createWinner = (
-  { player, symbol }: PlayerContainer,
-  fields?: number[]
-) => ({
-  player,
-  symbol,
-  fields,
-});
+function isWin(state: Int8Array): boolean {
+  const isWinningRow = (offset: number, stride: number) => {
+    const first = state[offset];
+    return (
+      first !== 0 &&
+      first === state[offset + stride] &&
+      first === state[offset + 2 * stride]
+    );
+  };
+
+  return (
+    isWinningRow(0, 1) ||
+    isWinningRow(3, 1) ||
+    isWinningRow(6, 1) ||
+    isWinningRow(0, 3) ||
+    isWinningRow(1, 3) ||
+    isWinningRow(2, 3) ||
+    isWinningRow(0, 4) ||
+    isWinningRow(2, 2)
+  );
+}
 
 export async function runGame({
   player0,
   player1,
   onStateUpdate,
-}: GameProps): Promise<Outcome> {
+}: GameProps): Promise<Player | null> {
   const state = Int8Array.from(initialState);
   let turn: number = 0;
   const players: PlayerContainer[] = [
@@ -86,34 +84,30 @@ export async function runGame({
     state[action] = symbol;
   }
 
-  async function getOutcome(): Promise<Outcome> {
+  async function getWinner(): Promise<Player | null> {
     try {
       while (turn < 9) {
         await handleAgent();
-
-        if (onStateUpdate) onStateUpdate(state);
-
-        const winningFields = getWinningFields(state);
-        if (winningFields)
-          return { winner: createWinner(players[turn % 2], winningFields) };
-
         turn++;
+
+        if (onStateUpdate) onStateUpdate(state, turn);
+
+        if (isWin(state)) return players[(turn - 1) % 2].player;
       }
     } catch (e) {
       if (e instanceof GameAbortedException)
-        return { winner: createWinner(players[(turn + 1) % 2]) };
+        return players[(turn + 1) % 2].player;
       else throw e;
     }
 
-    return { winner: null };
+    return null;
   }
 
-  const outcome = await getOutcome();
+  const winner = await getWinner();
 
   players.forEach(({ player }) => {
-    if (player.onFinish)
-      player.onFinish(outcome, outcome.winner?.player === player);
+    if (player.onFinish) player.onFinish(player === winner);
   });
 
-  return outcome;
+  return winner;
 }

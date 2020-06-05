@@ -24,8 +24,7 @@ export function useTrainingPlayer(id: number): TrainingPlayerContainer {
           return action;
         },
 
-        async onFinish(outcome, isWinner) {
-          if (!outcome.winner) return;
+        async onFinish(isWinner) {
           await agent.replay(isWinner);
         },
       });

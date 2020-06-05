@@ -1,6 +1,6 @@
 import React from "react";
 
-import { runGame, initialState, Outcome, Player } from "../../game";
+import { runGame, initialState, FieldState, Player } from "../../game";
 import { Board } from "./board";
 
 type GameProps = {
@@ -14,6 +14,10 @@ type GameProps = {
 export type GameState = {
   state: typeof initialState;
   turn: number;
+};
+
+export type Outcome = {
+  winner: FieldState | null;
 };
 
 const initialGameState: GameState = {
@@ -56,26 +60,24 @@ export const Game: React.FC<GameProps> = ({
         p1 = tmp;
       }
 
-      let turn = 0;
-      const newOutcome = await runGame({
+      const winner = await runGame({
         player0: p0,
         player1: p1,
-        onStateUpdate: (state) => {
+        onStateUpdate: (state, turn) => {
           if (!mounted) return;
-
-          setGameState({
-            state,
-            turn,
-          });
-          turn++;
+          setGameState({ state: Int8Array.from(state), turn });
         },
       });
 
       if (!mounted) return;
 
-      setOutcome(newOutcome);
+      if (winner)
+        setOutcome({
+          winner: winner === p0 ? FieldState.Cross : FieldState.Circle,
+        });
+      else setOutcome({ winner: null });
 
-      if (onFinish) onFinish(id, newOutcome.winner?.player || null);
+      if (onFinish) onFinish(id, winner);
     }
 
     run();

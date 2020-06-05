@@ -3,7 +3,8 @@ import React from "react";
 import styles from "./console.module.scss";
 import { useGameOutcome, useGameId } from "../..";
 import { usePlayerController } from "../../../players/human-player";
-import { Outcome, FieldState } from "../../../../game";
+import { FieldState } from "../../../../game";
+import { Outcome } from "../..";
 
 import crossImgUrl from "../field/cross.svg";
 import circleImgUrl from "../field/circle.svg";
@@ -25,7 +26,7 @@ function mapOutcomeToMessage({ winner }: Outcome) {
   if (winner)
     return (
       <>
-        {mapSymbolToImg(winner.symbol)}
+        {mapSymbolToImg(winner)}
         {"\u00A0"}won!
       </>
     );
