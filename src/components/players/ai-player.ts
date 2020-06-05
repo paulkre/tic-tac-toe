@@ -5,13 +5,13 @@ import { createModel } from "../../game/ml/model";
 
 type AiPlayerContainer = {
   player: Player | null;
-  probabilities: number[];
+  probabilities: Float32Array;
 };
 
-export const ProbsCtx = React.createContext<number[] | null>(null);
+export const ProbsCtx = React.createContext<Float32Array | null>(null);
 export const useProbs = () => React.useContext(ProbsCtx);
 
-const initialProbs: number[] = new Array(9).fill(0);
+const initialProbs = new Float32Array(3 * 3);
 
 export function useAiPlayer(id?: number): AiPlayerContainer {
   const [player, setPlayer] = React.useState<Player | null>(null);

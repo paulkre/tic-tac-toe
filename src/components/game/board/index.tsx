@@ -17,7 +17,7 @@ export const Board: React.FC = () => {
       <div
         className={cn(styles.inner, outcome && !outcome.winner && styles.draw)}
       >
-        {state.map((n, i) => (
+        {Array.from(state).map((n, i) => (
           <div
             className={cn(
               styles.item,

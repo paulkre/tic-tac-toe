@@ -5,10 +5,10 @@ import { createAgent } from "../../game/ml/agent";
 
 type TrainingPlayerContainer = {
   player: Player | null;
-  probabilities: number[];
+  probabilities: Float32Array;
 };
 
-const initialProbs: number[] = new Array(9).fill(0);
+const initialProbs = new Float32Array(3 * 3);
 
 export function useTrainingPlayer(id: number): TrainingPlayerContainer {
   const [player, setPlayer] = React.useState<Player | null>(null);

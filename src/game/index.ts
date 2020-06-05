@@ -15,24 +15,24 @@ export interface Outcome {
 }
 
 export type Game = {
-  state: number[];
+  state: Int8Array;
   outcome: Outcome | null;
 };
 
 export type Player = {
-  play(state: FieldState[], playerId: number): Promise<number>;
-  onOponentPlay?(state: FieldState[]): void;
+  play(state: Int8Array, playerId: number): Promise<number>;
+  onOponentPlay?(state: Int8Array): void;
   onFinish?(outcome: Outcome, isWinner: boolean): void | Promise<void>;
 };
 
-export const initialState = Array<FieldState>(9).fill(FieldState.Empty);
+export const initialState = new Int8Array(3 * 3);
 
-const invertState = (state: FieldState[]) => state.map<FieldState>((n) => -n);
+const invertState = (state: Int8Array) => state.map((n) => -n);
 
 type GameProps = {
   player0: Player;
   player1: Player;
-  onStateUpdate?: (state: FieldState[]) => void;
+  onStateUpdate?: (state: Int8Array) => void;
 };
 
 type PlayerContainer = {
@@ -45,7 +45,7 @@ export async function runGame({
   player1,
   onStateUpdate,
 }: GameProps): Promise<Outcome> {
-  const state: FieldState[] = [...initialState];
+  const state = Int8Array.from(initialState);
   let turn: number = 0;
   const players: PlayerContainer[] = [
     {
@@ -80,7 +80,7 @@ export async function runGame({
       while (turn < 9) {
         await handleAgent();
 
-        if (onStateUpdate) onStateUpdate([...state]);
+        if (onStateUpdate) onStateUpdate(state);
 
         const winningFields = getWinningFields(state);
         if (winningFields) {

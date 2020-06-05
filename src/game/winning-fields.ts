@@ -1,12 +1,12 @@
-export function getWinningFields(board: number[]) {
+export function getWinningFields(state: Int8Array) {
   const getRowIfEqual = (offset: number, stride: number) => {
     const a = offset;
     const b = offset + stride;
     const c = offset + 2 * stride;
     return (
-      board[a] !== 0 &&
-      board[a] === board[b] &&
-      board[a] === board[c] && [a, b, c]
+      state[a] !== 0 &&
+      state[a] === state[b] &&
+      state[a] === state[c] && [a, b, c]
     );
   };
 

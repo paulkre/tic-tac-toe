@@ -6,11 +6,11 @@ import { shuffleArray } from "../../util/shuffle-array";
 
 type Prediction = {
   action: number;
-  probs: number[];
+  probs: Float32Array;
 };
 
 type Agent = {
-  predict(state: FieldState[]): Promise<Prediction>;
+  predict(state: Int8Array): Promise<Prediction>;
   replay(isWin: boolean): void;
 };
 
@@ -23,7 +23,7 @@ type Sample = {
 
 const DISCOUNT_RATE = 0.95;
 
-function chooseAction(probs: number[], fields: FieldState[]) {
+function chooseAction(probs: Float32Array, fields: Int8Array) {
   const sortedActions = Array.from(probs.keys()).sort(
     (a, b) => probs[b] - probs[a]
   );
@@ -46,15 +46,17 @@ export async function createAgent(network?: tf.LayersModel): Promise<Agent> {
   let batch: Sample[] = [];
 
   return {
-    async predict(fields) {
-      const state = tf.tensor2d([fields]);
+    async predict(fieldStates) {
+      const state = tf.tensor2d([Array.from(fieldStates)]);
       const preds = tf.tidy(() => {
         const result = network!.predict(state);
         return Array.isArray(result) ? result[0] : result;
       });
 
-      const probs = tf.tidy(() => Array.from(preds.sigmoid().dataSync()));
-      const action = chooseAction(probs, fields);
+      const probs = tf.tidy(() =>
+        Float32Array.from(preds.sigmoid().dataSync())
+      );
+      const action = chooseAction(probs, fieldStates);
 
       const sample: Sample = { state, preds, action };
 
