@@ -18,15 +18,15 @@ const Nav: React.FC<{ pages: Page[] }> = ({ pages }) => {
 
   return (
     <nav className={styles.nav}>
-      {pages.map(({ path, title }, i) => (
-        <Link
-          to={path}
-          className={pathname === path ? styles.activeLink : undefined}
-          key={i}
-        >
-          {title}
-        </Link>
-      ))}
+      {pages.map(({ path, title }, i) =>
+        pathname === path ? (
+          <div>{title}</div>
+        ) : (
+          <Link to={path} key={i}>
+            {title}
+          </Link>
+        )
+      )}
     </nav>
   );
 };
