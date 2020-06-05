@@ -12,8 +12,8 @@ const Symbol: React.FC<{ src: string }> = ({ src }) => (
   <img alt="Winning symbol" src={src} className={styles.symbol} />
 );
 
-function mapOutcomeWinnerToSymbol(state: number) {
-  switch (state) {
+function mapSymbolToImg(symbol: FieldState) {
+  switch (symbol) {
     case FieldState.Cross:
       return <Symbol src={crossImgUrl} />;
     case FieldState.Circle:
@@ -25,7 +25,7 @@ function mapOutcomeToMessage({ winner }: Outcome) {
   if (winner)
     return (
       <>
-        {mapOutcomeWinnerToSymbol(winner.id)}
+        {mapSymbolToImg(winner.symbol)}
         {"\u00A0"}won!
       </>
     );

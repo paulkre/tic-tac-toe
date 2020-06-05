@@ -74,8 +74,7 @@ export const Game: React.FC<GameProps> = ({
 
       setOutcome(newOutcome);
 
-      if (onFinish)
-        onFinish(id, newOutcome.winner && (newOutcome.winner.id ? p1 : p0));
+      if (onFinish) onFinish(id, newOutcome.winner?.player || null);
     }
 
     run();

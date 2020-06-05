@@ -8,7 +8,8 @@ export enum FieldState {
 
 export interface Outcome {
   winner: {
-    id: number;
+    player: Player;
+    symbol: FieldState;
     fields: number[];
   } | null;
 }
@@ -34,6 +35,11 @@ type GameProps = {
   onStateUpdate?: (state: FieldState[]) => void;
 };
 
+type PlayerContainer = {
+  player: Player;
+  symbol: FieldState;
+};
+
 export async function runGame({
   player0,
   player1,
@@ -41,19 +47,28 @@ export async function runGame({
 }: GameProps): Promise<Outcome> {
   const state: FieldState[] = [...initialState];
   let turn: number = 0;
+  const players: PlayerContainer[] = [
+    {
+      player: player0,
+      symbol: FieldState.Cross,
+    },
+    {
+      player: player1,
+      symbol: FieldState.Circle,
+    },
+  ];
 
   async function handleAgent() {
     const playerId = turn % 2;
 
-    const symbol = !playerId ? FieldState.Cross : FieldState.Circle;
-    const { play } = !playerId ? player0 : player1;
+    const { player, symbol } = players[playerId];
 
     const normalizedState = playerId ? invertState(state) : state;
 
     const { onOponentPlay } = !playerId ? player1 : player0;
     if (onOponentPlay) onOponentPlay(normalizedState);
 
-    const action = await play(normalizedState, playerId);
+    const action = await player.play(normalizedState, playerId);
 
     if (state[action] !== FieldState.Empty) throw Error("Illegal move");
 
@@ -65,17 +80,21 @@ export async function runGame({
       while (turn < 9) {
         await handleAgent();
 
-        turn++;
         if (onStateUpdate) onStateUpdate([...state]);
 
         const winningFields = getWinningFields(state);
-        if (winningFields)
+        if (winningFields) {
+          const { player, symbol } = players[turn % 2];
           return {
             winner: {
-              id: state[winningFields[0]],
+              player,
+              symbol,
               fields: winningFields,
             },
           };
+        }
+
+        turn++;
       }
     } catch {}
 
@@ -84,16 +103,10 @@ export async function runGame({
 
   const outcome = await getOutcome();
 
-  if (player0.onFinish)
-    await player0.onFinish(
-      outcome,
-      outcome.winner ? outcome.winner.id === 0 : false
-    );
-  if (player1.onFinish)
-    await player1.onFinish(
-      outcome,
-      outcome.winner ? outcome.winner.id === 1 : false
-    );
+  players.forEach(({ player }, i) => {
+    if (player.onFinish)
+      player.onFinish(outcome, outcome.winner?.player === player);
+  });
 
   return outcome;
 }
