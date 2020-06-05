@@ -20,15 +20,6 @@
   form > div:not(:last-child) {
     margin-bottom: 1rem;
   }
-
-  button {
-    font-size: inherit;
-    padding: 0.5rem 0.75rem;
-
-    &:not([disabled]) {
-      cursor: pointer;
-    }
-  }
 }
 
 .title {
