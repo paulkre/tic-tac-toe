@@ -70,6 +70,7 @@ export const Game: React.FC<GameProps> = ({
             });
         },
       });
+
       if (!mounted) return;
 
       setOutcome(newOutcome);

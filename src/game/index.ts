@@ -10,7 +10,7 @@ export interface Outcome {
   winner: {
     player: Player;
     symbol: FieldState;
-    fields: number[];
+    fields?: number[];
   } | null;
 }
 
@@ -24,6 +24,8 @@ export type Player = {
   onOponentPlay?(state: Int8Array): void;
   onFinish?(outcome: Outcome, isWinner: boolean): void | Promise<void>;
 };
+
+export class GameAbortedException {}
 
 export const initialState = new Int8Array(3 * 3);
 
@@ -39,6 +41,15 @@ type PlayerContainer = {
   player: Player;
   symbol: FieldState;
 };
+
+const createWinner = (
+  { player, symbol }: PlayerContainer,
+  fields?: number[]
+) => ({
+  player,
+  symbol,
+  fields,
+});
 
 export async function runGame({
   player0,
@@ -83,27 +94,23 @@ export async function runGame({
         if (onStateUpdate) onStateUpdate(state);
 
         const winningFields = getWinningFields(state);
-        if (winningFields) {
-          const { player, symbol } = players[turn % 2];
-          return {
-            winner: {
-              player,
-              symbol,
-              fields: winningFields,
-            },
-          };
-        }
+        if (winningFields)
+          return { winner: createWinner(players[turn % 2], winningFields) };
 
         turn++;
       }
-    } catch {}
+    } catch (e) {
+      if (e instanceof GameAbortedException)
+        return { winner: createWinner(players[(turn + 1) % 2]) };
+      else throw e;
+    }
 
     return { winner: null };
   }
 
   const outcome = await getOutcome();
 
-  players.forEach(({ player }, i) => {
+  players.forEach(({ player }) => {
     if (player.onFinish)
       player.onFinish(outcome, outcome.winner?.player === player);
   });

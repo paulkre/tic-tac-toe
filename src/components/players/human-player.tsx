@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Player } from "../../game";
+import { Player, GameAbortedException } from "../../game";
 
 type HumanPlayerContainer = {
   player: Player | null;
@@ -55,7 +55,7 @@ export function useHumanPlayer(): HumanPlayerContainer {
             },
 
             release() {
-              if (!acted) reject();
+              if (!acted) reject(new GameAbortedException());
             },
           });
         }),

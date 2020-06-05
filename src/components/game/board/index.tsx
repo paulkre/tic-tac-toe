@@ -21,10 +21,7 @@ export const Board: React.FC = () => {
           <div
             className={cn(
               styles.item,
-              outcome &&
-                outcome.winner &&
-                outcome.winner.fields.includes(i) &&
-                styles.highlighted
+              outcome?.winner?.fields?.includes(i) && styles.highlighted
             )}
             key={i}
           >
