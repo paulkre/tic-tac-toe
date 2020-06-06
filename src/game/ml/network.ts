@@ -7,8 +7,13 @@ export const loadNetwork = () => tf.loadLayersModel(modelUrl);
 export function createNetwork() {
   const network = tf.sequential({
     layers: [
-      tf.layers.dense({
+      tf.layers.embedding({
         inputShape: [9],
+        inputDim: 3,
+        outputDim: 8,
+      }),
+      tf.layers.flatten(),
+      tf.layers.dense({
         units: 64,
         activation: "relu",
       }),

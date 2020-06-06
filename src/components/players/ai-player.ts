@@ -1,6 +1,7 @@
 import React from "react";
 
-import { Player, FieldState, GameAbortedException } from "../../game";
+import { useAsyncWrap } from "../../util/async-wrap";
+import { Player, FieldState } from "../../game";
 import { createModel } from "../../game/ml/model";
 
 type AiPlayerContainer = {
@@ -14,19 +15,17 @@ export const useProbs = () => React.useContext(ProbsCtx);
 const initialProbs = new Float32Array(3 * 3);
 
 export function useAiPlayer(id?: number): AiPlayerContainer {
+  const asyncWrap = useAsyncWrap();
   const [player, setPlayer] = React.useState<Player | null>(null);
   const [probabilities, setProbabilities] = React.useState(initialProbs);
 
   React.useEffect(() => {
-    let mounted = true;
-
     createModel().then((model) => {
-      setPlayer({
+      asyncWrap(setPlayer)({
         async getAction(state) {
           const probs = await model.predict(state);
-          if (!mounted) throw new GameAbortedException();
 
-          setProbabilities(probs);
+          asyncWrap(setProbabilities)(probs);
 
           const sortedActions = Array.from(probs.keys()).sort(
             (a, b) => probs[b] - probs[a]
@@ -42,16 +41,12 @@ export function useAiPlayer(id?: number): AiPlayerContainer {
 
         onOponentPlay(state) {
           model.predict(state).then((probs) => {
-            setProbabilities(probs);
+            asyncWrap(setProbabilities)(probs);
           });
         },
       });
     });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  }, [asyncWrap]);
 
   React.useEffect(() => {
     setProbabilities(initialProbs);

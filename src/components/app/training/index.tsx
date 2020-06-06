@@ -12,6 +12,9 @@ export const Training: React.FC = () => {
   return !hyperParameters ? (
     <HyperParameterForm onSubmit={setHyperParameters} />
   ) : (
-    <TrainingSession hyperParameters={hyperParameters} />
+    <TrainingSession
+      hyperParameters={hyperParameters}
+      onExit={() => setHyperParameters(null)}
+    />
   );
 };

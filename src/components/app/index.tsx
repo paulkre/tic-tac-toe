@@ -20,7 +20,7 @@ const Nav: React.FC<{ pages: Page[] }> = ({ pages }) => {
     <nav className={styles.nav}>
       {pages.map(({ path, title }, i) =>
         pathname === path ? (
-          <div>{title}</div>
+          <div key={i}>{title}</div>
         ) : (
           <Link to={path} key={i}>
             {title}

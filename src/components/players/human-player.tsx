@@ -40,10 +40,16 @@ export function useHumanPlayer(): HumanPlayerContainer {
   );
 
   React.useEffect(() => {
+    let mounted = true;
+
     setPlayer({
       getAction: (_state, id) =>
         new Promise<number>((resolve, reject) => {
           let acted = false;
+
+          const abort = () => reject(new GameAbortedException());
+
+          if (!mounted) abort();
 
           setController({
             id,
@@ -55,11 +61,15 @@ export function useHumanPlayer(): HumanPlayerContainer {
             },
 
             release() {
-              if (!acted) reject(new GameAbortedException());
+              if (!acted) abort();
             },
           });
         }),
     });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return {

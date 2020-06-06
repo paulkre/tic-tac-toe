@@ -1,7 +1,7 @@
 export enum FieldState {
   Empty = 0,
   Cross = 1,
-  Circle = -1,
+  Circle = 2,
 }
 
 export type Player = {
@@ -14,7 +14,17 @@ export class GameAbortedException {}
 
 export const initialState = new Int8Array(3 * 3);
 
-const invertState = (state: Int8Array) => state.map((n) => -n);
+const invertState = (state: Int8Array) =>
+  state.map((n) => {
+    switch (n) {
+      case FieldState.Cross:
+        return FieldState.Circle;
+      case FieldState.Circle:
+        return FieldState.Cross;
+      default:
+        return n;
+    }
+  });
 
 type GameProps = {
   player0: Player;
@@ -105,9 +115,9 @@ export async function runGame({
 
   const winner = await getWinner();
 
-  players.forEach(({ player }) => {
-    if (player.onFinish) player.onFinish(player === winner);
-  });
+  for (const { player } of players) {
+    if (player.onFinish) await player.onFinish(player === winner);
+  }
 
   return winner;
 }

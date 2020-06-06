@@ -4,7 +4,7 @@ import { Formik, FormikErrors } from "formik";
 import { Form } from "../../form";
 import { HyperParameters } from "./training-session";
 
-const initialValues: HyperParameters = { batchCount: 16, sampleCount: 1000 };
+const initialValues: HyperParameters = { batchCount: 64, sampleCount: 1000 };
 
 type HyperParameterProps = {
   onSubmit(hyperParameters: HyperParameters): void;

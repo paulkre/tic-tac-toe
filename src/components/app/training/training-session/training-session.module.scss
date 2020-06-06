@@ -1,0 +1,30 @@
+.wrapper {
+  & > div:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+
+  table {
+    width: 100%;
+    margin: 0 auto 2rem;
+    border-collapse: collapse;
+
+    th,
+    td {
+      text-align: left;
+      vertical-align: top;
+      padding: 0.25rem;
+    }
+
+    th {
+      width: 66.67%;
+    }
+
+    td {
+      width: 33.33%;
+    }
+
+    tr:nth-child(odd) {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+  }
+}
