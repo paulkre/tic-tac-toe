@@ -6,13 +6,19 @@ export enum FieldState {
 
 export type Player = {
   getAction(state: Int8Array, playerId: number): Promise<number>;
-  onOponentPlay?(state: Int8Array): void;
-  onFinish?(isWinner: boolean): void | Promise<void>;
+  onOponentPlay?(state: Int8Array): void | Promise<void>;
+  onFinish?(outcome: Outcome): void | Promise<void>;
 };
 
 export class GameAbortedException {}
 
 export const initialState = new Int8Array(3 * 3);
+
+export enum Outcome {
+  Draw,
+  Win,
+  Loss,
+}
 
 const invertState = (state: Int8Array) =>
   state.map((n) => {
@@ -59,6 +65,12 @@ function isWin(state: Int8Array): boolean {
   );
 }
 
+function determineOutcome(player: Player, winner: Player | null) {
+  if (!winner) return Outcome.Draw;
+  if (player === winner) return Outcome.Win;
+  return Outcome.Loss;
+}
+
 export async function runGame({
   player0,
   player1,
@@ -85,7 +97,7 @@ export async function runGame({
     const normalizedState = playerId ? invertState(state) : state;
 
     const { onOponentPlay } = !playerId ? player1 : player0;
-    if (onOponentPlay) onOponentPlay(normalizedState);
+    if (onOponentPlay) await onOponentPlay(normalizedState);
 
     const action = await player.getAction(normalizedState, playerId);
 
@@ -116,7 +128,8 @@ export async function runGame({
   const winner = await getWinner();
 
   for (const { player } of players) {
-    if (player.onFinish) await player.onFinish(player === winner);
+    if (player.onFinish)
+      await player.onFinish(determineOutcome(player, winner));
   }
 
   return winner;

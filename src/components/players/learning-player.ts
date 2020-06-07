@@ -3,7 +3,9 @@ import React from "react";
 import { useAsyncWrap } from "../../util/async-wrap";
 import { createModel, Model, TrainingSample } from "../../game/ml/model";
 import { createNetwork } from "../../game/ml/network";
-import { Player, FieldState } from "../../game";
+import { Player, FieldState, Outcome } from "../../game";
+
+const EPS = 0.1;
 
 type LearningPlayer = {
   player: Player | null;
@@ -16,6 +18,9 @@ type ActionRecord = {
   state: Int8Array;
   action: number;
 };
+
+const getLegalActions = (state: Int8Array) =>
+  Array.from(state.keys()).filter((n) => state[n] === FieldState.Empty);
 
 export function useLearningPlayer(sampleCount: number): LearningPlayer {
   const asyncWrap = useAsyncWrap();
@@ -73,6 +78,17 @@ export function useLearningPlayer(sampleCount: number): LearningPlayer {
           (a, b) => probs[b] - probs[a]
         );
 
+        if (Math.random() <= EPS) {
+          const legalActions = getLegalActions(state);
+          const action =
+            legalActions[Math.floor(Math.random() * legalActions.length)];
+          actionRecord = {
+            state: Int8Array.from(state),
+            action,
+          };
+          return action;
+        }
+
         while (sortedActions.length) {
           const action = sortedActions.shift()!;
 
@@ -96,16 +112,21 @@ export function useLearningPlayer(sampleCount: number): LearningPlayer {
         return 0;
       },
 
-      async onFinish(isWinner) {
-        if (isWinner)
+      async onFinish(outcome) {
+        if (outcome === Outcome.Win)
           await recordSample({
             ...actionRecord!,
             reward: 10,
           });
-        else
+        else if (outcome === Outcome.Draw)
           await recordSample({
             ...actionRecord!,
-            reward: -0.01,
+            reward: 0,
+          });
+        else if (outcome === Outcome.Loss)
+          await recordSample({
+            ...actionRecord!,
+            reward: -1,
           });
       },
     });

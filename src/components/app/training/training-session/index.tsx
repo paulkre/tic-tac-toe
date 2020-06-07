@@ -4,6 +4,7 @@ import { useAsyncWrap } from "../../../../util/async-wrap";
 import { runGame } from "../../../../game";
 import { useLearningPlayer } from "../../../players/learning-player";
 import { randomPlayer } from "../../../players/random-player";
+import { TrainingGraph } from "./training-graph";
 
 import styles from "./training-session.module.scss";
 
@@ -17,7 +18,7 @@ type TrainingSessionProps = {
   onExit?(): void;
 };
 
-type TrainingState = {
+export type TrainingState = {
   gameCount: number;
   winCount: number;
   lossCount: number;
@@ -82,6 +83,7 @@ export const TrainingSession: React.FC<TrainingSessionProps> = ({
 
   return !done ? (
     <div className={styles.wrapper}>
+      <TrainingGraph {...trainingState} />
       <table>
         <tbody>
           <tr>
@@ -94,26 +96,6 @@ export const TrainingSession: React.FC<TrainingSessionProps> = ({
             <th>Batches recorded:</th>
             <td>
               {recordedBatchesCount} / {batchCount}
-            </td>
-          </tr>
-          <tr>
-            <th>Games played:</th>
-            <td>{trainingState.gameCount}</td>
-          </tr>
-          <tr>
-            <th>Wins:</th>
-            <td>{trainingState.winCount}</td>
-          </tr>
-          <tr>
-            <th>Losses:</th>
-            <td>{trainingState.lossCount}</td>
-          </tr>
-          <tr>
-            <th>Draws:</th>
-            <td>
-              {trainingState.gameCount -
-                trainingState.winCount -
-                trainingState.lossCount}
             </td>
           </tr>
         </tbody>

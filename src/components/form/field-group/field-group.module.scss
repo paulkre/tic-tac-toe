@@ -1,0 +1,22 @@
+.wrapper {
+  position: relative;
+  margin: 2rem auto;
+
+  padding: 2.25rem 2rem 2rem;
+  border: 1px solid #808080;
+}
+
+.title {
+  position: absolute;
+  left: 0;
+  top: -11px;
+  font-size: 18px;
+  color: #808080;
+  width: 100%;
+}
+
+.titleInner {
+  display: inline-block;
+  background: #f0f0f0;
+  padding: 0 0.5rem;
+}

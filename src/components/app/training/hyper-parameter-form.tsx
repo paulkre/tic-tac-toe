@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik, FormikErrors } from "formik";
 
-import { Form } from "../../form";
+import { Form, FieldGroup } from "../../form";
 import { HyperParameters } from "./training-session";
 
 const initialValues: HyperParameters = { batchCount: 64, sampleCount: 1000 };
@@ -29,29 +29,31 @@ export const HyperParameterForm: React.FC<HyperParameterProps> = ({
     }}
   >
     {({ values, handleSubmit, handleChange, handleBlur, isSubmitting }) => (
-      <Form onSubmit={handleSubmit} title="Hyper Parameters">
-        <div>
-          <label htmlFor="batchCount">Number of batches:</label>
-          <input
-            type="number"
-            id="batchCount"
-            name="batchCount"
-            value={values.batchCount}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </div>
-        <div>
-          <label htmlFor="sampleCount">Number of samples in one batch:</label>
-          <input
-            type="number"
-            id="sampleCount"
-            name="sampleCount"
-            value={values.sampleCount}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </div>
+      <Form onSubmit={handleSubmit}>
+        <FieldGroup title="Hyper Parameters">
+          <div>
+            <label htmlFor="batchCount">Number of batches:</label>
+            <input
+              type="number"
+              id="batchCount"
+              name="batchCount"
+              value={values.batchCount}
+              onChange={handleChange}
+              onBlur={handleBlur}
+            />
+          </div>
+          <div>
+            <label htmlFor="sampleCount">Number of samples in one batch:</label>
+            <input
+              type="number"
+              id="sampleCount"
+              name="sampleCount"
+              value={values.sampleCount}
+              onChange={handleChange}
+              onBlur={handleBlur}
+            />
+          </div>
+        </FieldGroup>
         <div>
           <button type="submit" disabled={isSubmitting}>
             Start training
