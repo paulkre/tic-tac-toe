@@ -1,8 +1,10 @@
 import React from "react";
 
+import { createWorker } from "../../game/ml-agent/worker";
+import { AgentMode } from "../../game/ml-agent";
+
 import { useAsyncWrap } from "../../util/async-wrap";
-import { Player, FieldState } from "../../game";
-import { createModel } from "../../game/ml/model";
+import { Player } from "../../game";
 
 type AiPlayerContainer = {
   player: Player | null;
@@ -14,43 +16,45 @@ export const useProbs = () => React.useContext(ProbsCtx);
 
 const initialProbs = new Float32Array(3 * 3);
 
-export function useAiPlayer(id?: number): AiPlayerContainer {
+export function useAiPlayer(modelUrl?: string): AiPlayerContainer {
   const asyncWrap = useAsyncWrap();
   const [player, setPlayer] = React.useState<Player | null>(null);
   const [probabilities, setProbabilities] = React.useState(initialProbs);
 
   React.useEffect(() => {
-    createModel().then((model) => {
+    async function initPlayer() {
+      const agentWorker = await createWorker(
+        AgentMode.UsePreTrainedModel,
+        modelUrl
+          ? {
+              modelUrl,
+            }
+          : undefined
+      );
+
       asyncWrap(setPlayer)({
         async getAction(state) {
-          const probs = await model.predict(state);
+          const { action, probs } = await agentWorker.predict(state);
 
           asyncWrap(setProbabilities)(probs);
 
-          const sortedActions = Array.from(probs.keys()).sort(
-            (a, b) => probs[b] - probs[a]
-          );
-
-          while (sortedActions.length) {
-            const action = sortedActions.shift()!;
-            if (state[action] === FieldState.Empty) return action;
-          }
-
-          throw Error("Action prediction failed");
+          return action;
         },
 
         onOponentPlay(state) {
-          model.predict(state).then((probs) => {
+          agentWorker.predict(state).then(({ probs }) => {
             asyncWrap(setProbabilities)(probs);
           });
         },
       });
-    });
-  }, [asyncWrap]);
+    }
+
+    initPlayer();
+  }, [asyncWrap, modelUrl]);
 
   React.useEffect(() => {
     setProbabilities(initialProbs);
-  }, [id]);
+  }, [modelUrl]);
 
   return {
     player,

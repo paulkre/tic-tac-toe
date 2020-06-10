@@ -2,20 +2,17 @@ import React from "react";
 
 import { useAsyncWrap } from "../../../../util/async-wrap";
 import { runGame } from "../../../../game";
-import { useLearningPlayer } from "../../../players/learning-player";
-import { randomPlayer } from "../../../players/random-player";
-import { TrainingGraph } from "./training-graph";
+import {
+  useLearningPlayer,
+  TrainingParameters,
+} from "../../../players/learning-player";
 
 import styles from "./training-session.module.scss";
 
-export type HyperParameters = {
-  batchCount: number;
-  sampleCount: number;
-};
-
 type TrainingSessionProps = {
-  hyperParameters: HyperParameters;
+  trainingParameters: TrainingParameters;
   onExit?(): void;
+  onFinish?(): void;
 };
 
 export type TrainingState = {
@@ -24,87 +21,51 @@ export type TrainingState = {
   lossCount: number;
 };
 
-const initialTrainingState: TrainingState = {
-  gameCount: 0,
-  winCount: 0,
-  lossCount: 0,
-};
-
 export const TrainingSession: React.FC<TrainingSessionProps> = ({
-  hyperParameters: { sampleCount, batchCount },
+  trainingParameters,
   onExit,
+  onFinish,
 }) => {
   const asyncWrap = useAsyncWrap();
-  const {
-    player: learningPlayer,
-    model,
-    recordedBatchesCount,
-    recordedSamplesCount,
-  } = useLearningPlayer(sampleCount);
-  const [trainingState, setTrainingState] = React.useState(
-    initialTrainingState
+  const { player, batchCount, sampleCount } = useLearningPlayer(
+    trainingParameters
   );
+  const [gameCount, setGameCount] = React.useState(0);
   const [done, setDone] = React.useState(false);
 
   React.useEffect(() => {
-    if (!learningPlayer || done) return;
+    if (!player || done) return;
 
-    let player0 = learningPlayer;
-    let player1 = randomPlayer;
-
-    // Alternate player order after every game
-    if (trainingState.gameCount % 2) {
-      const tmp = player0;
-      player0 = player1;
-      player1 = tmp;
-    }
-
-    runGame({ player0, player1 }).then((winner) => {
-      const newState: TrainingState = {
-        ...trainingState,
-        gameCount: trainingState.gameCount + 1,
-      };
-
-      if (winner) {
-        if (winner === learningPlayer) newState.winCount++;
-        else newState.lossCount++;
-      }
-
-      asyncWrap(setTrainingState)(newState);
+    runGame({ player0: player, player1: player }).then(() => {
+      asyncWrap(setGameCount)(gameCount + 1);
     });
-  }, [done, trainingState, learningPlayer, asyncWrap]);
+  }, [done, gameCount, player, asyncWrap]);
 
   React.useEffect(() => {
-    if (recordedBatchesCount >= batchCount && model) {
-      model.download();
+    if (batchCount >= trainingParameters.batchCount) {
       setDone(true);
+      if (onFinish) onFinish();
     }
-  }, [recordedBatchesCount, batchCount, model]);
+  }, [batchCount, trainingParameters, onFinish]);
 
   return !done ? (
     <div className={styles.wrapper}>
-      <TrainingGraph {...trainingState} />
       <table>
         <tbody>
           <tr>
             <th>Samples recorded:</th>
             <td>
-              {recordedSamplesCount} / {sampleCount}
+              {sampleCount} / {trainingParameters.batchSize}
             </td>
           </tr>
           <tr>
-            <th>Batches recorded:</th>
+            <th>Batches learned:</th>
             <td>
-              {recordedBatchesCount} / {batchCount}
+              {batchCount} / {trainingParameters.batchCount}
             </td>
           </tr>
         </tbody>
       </table>
-      {model && (
-        <div>
-          <button onClick={() => model.download()}>Download model</button>
-        </div>
-      )}
       {onExit && (
         <div>
           <button onClick={onExit}>Stop training</button>

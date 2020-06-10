@@ -20,8 +20,8 @@ export enum Outcome {
   Loss,
 }
 
-const invertState = (state: Int8Array) =>
-  state.map((n) => {
+export function invertState(state: Int8Array): Int8Array {
+  return state.map((n) => {
     switch (n) {
       case FieldState.Cross:
         return FieldState.Circle;
@@ -31,6 +31,7 @@ const invertState = (state: Int8Array) =>
         return n;
     }
   });
+}
 
 type GameProps = {
   player0: Player;
@@ -43,7 +44,7 @@ type PlayerContainer = {
   symbol: FieldState;
 };
 
-function isWin(state: Int8Array): boolean {
+export function isWin(state: Int8Array): boolean {
   const isWinningRow = (offset: number, stride: number) => {
     const first = state[offset];
     return (

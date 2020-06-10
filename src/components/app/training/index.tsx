@@ -1,20 +1,52 @@
 import React from "react";
 
-import { HyperParameterForm } from "./hyper-parameter-form";
-import { TrainingSession, HyperParameters } from "./training-session";
+import {
+  tempModelUrl,
+  TrainingParameters,
+} from "../../players/learning-player";
+import { Section } from "./section";
+import { ParameterForm } from "./parameter-form";
+import { TrainingSession } from "./training-session";
+
+import { Pva } from "../pva";
 
 export const Training: React.FC = () => {
   const [
-    hyperParameters,
-    setHyperParameters,
-  ] = React.useState<HyperParameters | null>(null);
+    trainingParameters,
+    setTrainingParameters,
+  ] = React.useState<TrainingParameters | null>(null);
+  const [done, setDone] = React.useState(false);
 
-  return !hyperParameters ? (
-    <HyperParameterForm onSubmit={setHyperParameters} />
-  ) : (
-    <TrainingSession
-      hyperParameters={hyperParameters}
-      onExit={() => setHyperParameters(null)}
-    />
+  const onFinish = React.useCallback(() => {
+    setDone(true);
+  }, []);
+
+  return (
+    <>
+      <Section title="Parameters">
+        <ParameterForm
+          onSubmit={setTrainingParameters}
+          disableSubmit={!!trainingParameters && !done}
+        />
+      </Section>
+      <Section title="Training">
+        {trainingParameters ? (
+          <TrainingSession
+            trainingParameters={trainingParameters}
+            onExit={() => setTrainingParameters(null)}
+            onFinish={onFinish}
+          />
+        ) : (
+          <p>Submit the form to start the training.</p>
+        )}
+      </Section>
+      <Section title="Test Game">
+        {done ? (
+          <Pva modelUrl={tempModelUrl} />
+        ) : (
+          <p>Finish the training to test your agent.</p>
+        )}
+      </Section>
+    </>
   );
 };

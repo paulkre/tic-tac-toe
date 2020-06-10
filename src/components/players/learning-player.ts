@@ -1,141 +1,68 @@
 import React from "react";
 
 import { useAsyncWrap } from "../../util/async-wrap";
-import { createModel, Model, TrainingSample } from "../../game/ml/model";
-import { createNetwork } from "../../game/ml/network";
-import { Player, FieldState, Outcome } from "../../game";
+import { AgentMode } from "../../game/ml-agent";
+import { createWorker } from "../../game/ml-agent/worker";
+import { Player } from "../../game";
 
-const EPS = 0.1;
+export const tempModelUrl = "indexeddb://model";
+
+export type TrainingParameters = {
+  batchCount: number;
+  batchSize: number;
+};
 
 type LearningPlayer = {
   player: Player | null;
-  model: Model | null;
-  recordedBatchesCount: number;
-  recordedSamplesCount: number;
+  batchCount: number;
+  sampleCount: number;
 };
 
-type ActionRecord = {
-  state: Int8Array;
-  action: number;
-};
-
-const getLegalActions = (state: Int8Array) =>
-  Array.from(state.keys()).filter((n) => state[n] === FieldState.Empty);
-
-export function useLearningPlayer(sampleCount: number): LearningPlayer {
+export function useLearningPlayer(
+  trainingParameters: TrainingParameters
+): LearningPlayer {
   const asyncWrap = useAsyncWrap();
-  const [model, setModel] = React.useState<Model | null>(null);
-  const [recordedSamplesCount, setRecordedSamplesCount] = React.useState(0);
-  const [recordedBatchesCount, setRecordedBatchesCount] = React.useState(0);
+  const [sampleCount, setSampleCount] = React.useState(0);
+  const [batchCount, setBatchCount] = React.useState(0);
   const [player, setPlayer] = React.useState<Player | null>(null);
 
   React.useEffect(() => {
-    createModel(createNetwork()).then((model) => {
-      asyncWrap(setModel)(model);
-    });
-  }, [asyncWrap]);
+    async function initPlayer() {
+      const agentWorker = await createWorker(AgentMode.Training, {
+        batchSize: trainingParameters.batchSize,
+      });
 
-  React.useEffect(() => {
-    if (!model) return;
+      let localBatchCount = 0;
 
-    let batch: TrainingSample[] = [];
-    let localBatchCount = 0;
+      asyncWrap(setPlayer)({
+        async getAction(state) {
+          return (await agentWorker.predict(state)).action;
+        },
 
-    let actionRecord: ActionRecord | null = null;
+        async onFinish() {
+          const sampleCount = await agentWorker.getSampleCount();
+          asyncWrap(setSampleCount)(sampleCount);
 
-    async function learnBatch() {
-      await model!.train(batch);
-      batch = [];
-      localBatchCount++;
+          if (sampleCount >= trainingParameters.batchSize) {
+            await agentWorker.train();
+            localBatchCount++;
+            asyncWrap(setBatchCount)(localBatchCount);
+            asyncWrap(setSampleCount)(0);
 
-      asyncWrap(setRecordedSamplesCount)(0);
-      asyncWrap(setRecordedBatchesCount)(localBatchCount);
-    }
-
-    async function recordSample(sample: TrainingSample) {
-      if (batch.length < sampleCount) {
-        batch.push(sample);
-        asyncWrap(setRecordedSamplesCount)(batch.length);
-      } else {
-        await learnBatch();
-      }
-    }
-
-    asyncWrap(setPlayer)({
-      async getAction(state) {
-        if (actionRecord) {
-          // Remember previous action
-          await recordSample({
-            ...actionRecord,
-            nextState: Int8Array.from(state),
-            reward: -0.01,
-          });
-        }
-
-        const probs = await model.predict(state);
-
-        const sortedActions = Array.from(probs.keys()).sort(
-          (a, b) => probs[b] - probs[a]
-        );
-
-        if (Math.random() <= EPS) {
-          const legalActions = getLegalActions(state);
-          const action =
-            legalActions[Math.floor(Math.random() * legalActions.length)];
-          actionRecord = {
-            state: Int8Array.from(state),
-            action,
-          };
-          return action;
-        }
-
-        while (sortedActions.length) {
-          const action = sortedActions.shift()!;
-
-          if (state[action] === FieldState.Empty) {
-            actionRecord = {
-              state: Int8Array.from(state),
-              action,
-            };
-
-            return action;
-          } else {
-            // Punish illegal action
-            await recordSample({
-              state: Int8Array.from(state),
-              action,
-              reward: -0.1,
-            });
+            if (localBatchCount >= trainingParameters.batchCount) {
+              await agentWorker.save(tempModelUrl);
+            }
           }
-        }
+        },
+      });
+    }
 
-        return 0;
-      },
-
-      async onFinish(outcome) {
-        if (outcome === Outcome.Win)
-          await recordSample({
-            ...actionRecord!,
-            reward: 10,
-          });
-        else if (outcome === Outcome.Draw)
-          await recordSample({
-            ...actionRecord!,
-            reward: 0,
-          });
-        else if (outcome === Outcome.Loss)
-          await recordSample({
-            ...actionRecord!,
-            reward: -1,
-          });
-      },
-    });
-  }, [model, sampleCount, asyncWrap]);
+    initPlayer();
+  }, [trainingParameters, asyncWrap]);
 
   return {
     player,
-    model,
-    recordedBatchesCount,
-    recordedSamplesCount,
+    batchCount,
+    sampleCount,
   };
 }

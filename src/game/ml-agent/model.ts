@@ -1,10 +1,10 @@
 import * as tf from "@tensorflow/tfjs";
 
-const modelUrl = `${process.env.PUBLIC_URL}/static/ml/model.json`;
+export function loadModel(modelUrl: string) {
+  return tf.loadLayersModel(modelUrl);
+}
 
-export const loadNetwork = () => tf.loadLayersModel(modelUrl);
-
-export function createNetwork() {
+export function createModel() {
   const network = tf.sequential({
     layers: [
       tf.layers.embedding({

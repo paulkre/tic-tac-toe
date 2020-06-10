@@ -8,11 +8,15 @@ import {
 import { useAiPlayer, ProbsCtx } from "../../players/ai-player";
 import { GameRepeater } from "../../game/game-repeater";
 
-export const Pva: React.FC = () => {
-  const human = useHumanPlayer();
-  const ai = useAiPlayer();
+type PvaProps = {
+  modelUrl?: string;
+};
 
-  if (!human.player || !ai.player) return null;
+export const Pva: React.FC<PvaProps> = ({ modelUrl }) => {
+  const human = useHumanPlayer();
+  const ai = useAiPlayer(modelUrl);
+
+  if (!human.player || !ai.player) return <p>Loading...</p>;
 
   return (
     <ProbsCtx.Provider value={ai.probabilities}>
