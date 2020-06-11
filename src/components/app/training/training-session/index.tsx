@@ -27,11 +27,23 @@ export const TrainingSession: React.FC<TrainingSessionProps> = ({
   onFinish,
 }) => {
   const asyncWrap = useAsyncWrap();
-  const { player, batchCount, sampleCount } = useLearningPlayer(
-    trainingParameters
-  );
   const [gameCount, setGameCount] = React.useState(0);
   const [done, setDone] = React.useState(false);
+
+  const handleFinish = React.useCallback(() => {
+    setGameCount(0);
+    setDone(true);
+    if (onFinish) onFinish();
+  }, [onFinish]);
+
+  const { player, batchCount, sampleCount } = useLearningPlayer(
+    trainingParameters,
+    handleFinish
+  );
+
+  React.useEffect(() => {
+    if (trainingParameters) setDone(false);
+  }, [trainingParameters]);
 
   React.useEffect(() => {
     if (!player || done) return;
@@ -40,13 +52,6 @@ export const TrainingSession: React.FC<TrainingSessionProps> = ({
       asyncWrap(setGameCount)(gameCount + 1);
     });
   }, [done, gameCount, player, asyncWrap]);
-
-  React.useEffect(() => {
-    if (batchCount >= trainingParameters.batchCount) {
-      setDone(true);
-      if (onFinish) onFinish();
-    }
-  }, [batchCount, trainingParameters, onFinish]);
 
   return !done ? (
     <div className={styles.wrapper}>
@@ -73,6 +78,6 @@ export const TrainingSession: React.FC<TrainingSessionProps> = ({
       )}
     </div>
   ) : (
-    <div>Training finished.</div>
+    <p>Training finished.</p>
   );
 };

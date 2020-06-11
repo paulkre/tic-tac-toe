@@ -19,7 +19,8 @@ type LearningPlayer = {
 };
 
 export function useLearningPlayer(
-  trainingParameters: TrainingParameters
+  trainingParameters: TrainingParameters,
+  onFinish?: () => void
 ): LearningPlayer {
   const asyncWrap = useAsyncWrap();
   const [sampleCount, setSampleCount] = React.useState(0);
@@ -27,11 +28,9 @@ export function useLearningPlayer(
   const [player, setPlayer] = React.useState<Player | null>(null);
 
   React.useEffect(() => {
-    async function initPlayer() {
-      const agentWorker = await createWorker(AgentMode.Training, {
-        batchSize: trainingParameters.batchSize,
-      });
-
+    createWorker(AgentMode.Training, {
+      batchSize: trainingParameters.batchSize,
+    }).then((agentWorker) => {
       let localBatchCount = 0;
 
       asyncWrap(setPlayer)({
@@ -51,14 +50,17 @@ export function useLearningPlayer(
 
             if (localBatchCount >= trainingParameters.batchCount) {
               await agentWorker.save(tempModelUrl);
+
+              asyncWrap(setSampleCount)(0);
+              asyncWrap(setBatchCount)(0);
+              asyncWrap(setPlayer)(null);
+              if (onFinish) onFinish();
             }
           }
         },
       });
-    }
-
-    initPlayer();
-  }, [trainingParameters, asyncWrap]);
+    });
+  }, [trainingParameters, onFinish, asyncWrap]);
 
   return {
     player,

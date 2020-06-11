@@ -14,15 +14,24 @@ export const Training: React.FC = () => {
   ] = React.useState<TrainingParameters | null>(null);
   const [done, setDone] = React.useState(false);
 
-  const onFinish = React.useCallback(() => {
+  const handleSubmit = React.useCallback((params: TrainingParameters) => {
+    setDone(false);
+    setTrainingParameters({ ...params });
+  }, []);
+
+  const handleFinish = React.useCallback(() => {
     setDone(true);
+  }, []);
+
+  const handleCancel = React.useCallback(() => {
+    setTrainingParameters(null);
   }, []);
 
   return (
     <>
       <Section title="Parameters">
         <ParameterForm
-          onSubmit={setTrainingParameters}
+          onSubmit={handleSubmit}
           disableSubmit={!!trainingParameters && !done}
         />
       </Section>
@@ -30,8 +39,8 @@ export const Training: React.FC = () => {
         {trainingParameters ? (
           <TrainingSession
             trainingParameters={trainingParameters}
-            onExit={() => setTrainingParameters(null)}
-            onFinish={onFinish}
+            onExit={handleCancel}
+            onFinish={handleFinish}
           />
         ) : (
           <p>Submit the form to start the training.</p>
