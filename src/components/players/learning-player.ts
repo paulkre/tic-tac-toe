@@ -36,7 +36,7 @@ export function useLearningPlayer(
 
       asyncWrap(setPlayer)({
         async getAction(state) {
-          return (await agentWorker.predict(state)).action;
+          return await agentWorker.predict(state);
         },
 
         async onFinish() {

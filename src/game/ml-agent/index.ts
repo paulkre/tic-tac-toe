@@ -85,17 +85,17 @@ export class Agent {
     }
   }
 
-  async predict(state: Int8Array): Promise<Prediction> {
+  async predict(state: Int8Array): Promise<number> {
     if (this.isTraining()) {
-      const probs = await this.predictProbs(state);
+      const dist = await this.predictActionDistribution(state);
       const action =
         Math.random() <= epsilon
           ? getRandomLegalAction(state)
-          : await this.decideAction(state, probs, (illegalAction) =>
+          : await this.decideAction(state, dist, (illegalAction) =>
               this.recordAction(state, illegalAction)
             );
       await this.recordAction(state, action);
-      return { action, probs };
+      return action;
     }
 
     return await this.strictPredict(state);
@@ -104,6 +104,14 @@ export class Agent {
   async train() {
     await learnMemory(this.model!, this.memory);
     this.memory = [];
+  }
+
+  getProbabilities(state: Int8Array): Float32Array {
+    const probs = this.predictActionDistribution(state);
+    const sigmoids = tf.sigmoid(probs);
+    const data = sigmoids.dataSync() as Float32Array;
+    sigmoids.dispose();
+    return data;
   }
 
   getSampleCount() {
@@ -118,23 +126,18 @@ export class Agent {
     return !!(this.mode & AgentMode.Training);
   }
 
-  private async strictPredict(state: Int8Array): Promise<Prediction> {
-    const probs = await this.predictProbs(state);
-    return {
-      action: await this.decideAction(state, probs),
-      probs,
-    };
+  private async strictPredict(state: Int8Array): Promise<number> {
+    const dist = await this.predictActionDistribution(state);
+    return await this.decideAction(state, dist);
   }
 
   /** Predicts the probability distribution of the action space. */
-  private predictProbs(state: Int8Array): Float32Array {
+  private predictActionDistribution(state: Int8Array): Float32Array {
     return tf.tidy(() => {
       const stateVector = tf.tensor([Array.from(state)]);
       const preds = this.model!.predict(stateVector);
-      const logits = Array.isArray(preds) ? preds[0] : preds;
-      const result = tf.sigmoid(logits);
-
-      return result.dataSync() as Float32Array;
+      const t = Array.isArray(preds) ? preds[0] : preds;
+      return t.dataSync() as Float32Array;
     });
   }
 
@@ -188,9 +191,7 @@ export class Agent {
       return createDefaultTrainingSample(state, action, nextState);
 
     const invertedNextState = invertState(nextState);
-    const { action: oponentAction } = await this.strictPredict(
-      invertedNextState
-    );
+    const oponentAction = await this.strictPredict(invertedNextState);
     nextState[oponentAction] = FieldState.Circle;
 
     if (isWin(nextState))

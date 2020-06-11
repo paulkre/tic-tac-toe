@@ -34,15 +34,14 @@ export function useAiPlayer(modelUrl?: string): AiPlayerContainer {
 
       asyncWrap(setPlayer)({
         async getAction(state) {
-          const { action, probs } = await agentWorker.predict(state);
-
-          asyncWrap(setProbabilities)(probs);
-
-          return action;
+          asyncWrap(setProbabilities)(
+            await agentWorker.getProbabilities(state)
+          );
+          return await agentWorker.predict(state);
         },
 
         onOponentPlay(state) {
-          agentWorker.predict(state).then(({ probs }) => {
+          agentWorker.getProbabilities(state).then((probs) => {
             asyncWrap(setProbabilities)(probs);
           });
         },
