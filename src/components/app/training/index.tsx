@@ -1,14 +1,11 @@
 import React from "react";
 
-import {
-  tempModelUrl,
-  TrainingParameters,
-} from "../../players/learning-player";
+import { TrainingParameters } from "../../players/learning-player";
 import { Section } from "./section";
 import { ParameterForm } from "./parameter-form";
 import { TrainingSession } from "./training-session";
 
-import { Pva } from "../pva";
+import { TrainingResult } from "./training-result";
 
 export const Training: React.FC = () => {
   const [
@@ -42,7 +39,7 @@ export const Training: React.FC = () => {
       </Section>
       <Section title="Test Game">
         {done ? (
-          <Pva modelUrl={tempModelUrl} />
+          <TrainingResult />
         ) : (
           <p>Finish the training to test your agent.</p>
         )}
