@@ -1,7 +1,7 @@
 import * as tf from "@tensorflow/tfjs";
 
 import { FieldState, invertState, isWin } from "..";
-import { shuffleArray } from "../../util/shuffle-array";
+import { learnMemory } from "./learn-memory";
 import { createModel, loadModel } from "./model";
 
 const epsilon = 0.1;
@@ -102,28 +102,8 @@ export class Agent {
   }
 
   async train() {
-    const batch = shuffleArray(this.memory);
+    await learnMemory(this.model!, this.memory);
     this.memory = [];
-
-    const inputs: Float32Array[] = [];
-    const outputs: Float32Array[] = [];
-
-    const theModel = this.model!;
-    for (const { state, action, reward } of batch) {
-      const input = Float32Array.from(state);
-
-      const predicts = tf.tidy(() => {
-        const result = theModel.predict(tf.tensor([Array.from(input)]));
-        const tensor = Array.isArray(result) ? result[0] : result;
-        return tensor.dataSync();
-      });
-
-      predicts[action] = reward;
-      inputs.push(input);
-      outputs.push(predicts as Float32Array);
-    }
-
-    await this.fit(inputs, outputs);
   }
 
   getSampleCount() {
@@ -144,16 +124,6 @@ export class Agent {
       action: await this.decideAction(state, probs),
       probs,
     };
-  }
-
-  private async fit(inputs: Float32Array[], outputs: Float32Array[]) {
-    const x = tf.tensor(inputs, [inputs.length, 9]);
-    const y = tf.tensor(outputs, [outputs.length, 9]);
-
-    await this.model!.fit(x, y);
-
-    x.dispose();
-    y.dispose();
   }
 
   /** Predicts the probability distribution of the action space. */
