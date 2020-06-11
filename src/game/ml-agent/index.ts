@@ -5,12 +5,14 @@ import { learnMemory } from "./learn-memory";
 import { createModel, loadModel } from "./model";
 
 const epsilon = 0.1;
+const discountRate = 0.95;
+const maxQDepth = 2;
+const defaultReward = -0.01;
 
 export type TrainingSample = {
   state: Int8Array;
   action: number;
   reward: number;
-  nextState?: Int8Array;
 };
 
 type Prediction = {
@@ -48,19 +50,6 @@ function isDraw(state: Int8Array): boolean {
   for (let i = 0; i < state.length; i++)
     if (state[i] === FieldState.Empty) return false;
   return true;
-}
-
-function createDefaultTrainingSample(
-  state: Int8Array,
-  action: number,
-  nextState: Int8Array
-): TrainingSample {
-  return {
-    state,
-    action,
-    nextState,
-    reward: -0.01,
-  };
 }
 
 export class Agent {
@@ -170,38 +159,45 @@ export class Agent {
     state: Int8Array,
     action: number
   ): Promise<TrainingSample> {
-    if (state[action] !== FieldState.Empty)
-      return {
-        state,
-        action,
-        reward: -0.1,
-      };
+    return {
+      state,
+      action,
+      reward: await this.getReward(state, action),
+    };
+  }
+
+  private async getReward(
+    state: Int8Array,
+    action: number,
+    depth = 0
+  ): Promise<number> {
+    if (state[action] !== FieldState.Empty) return -0.1;
 
     const nextState = Int8Array.from(state);
     nextState[action] = FieldState.Cross;
 
-    if (isWin(nextState))
-      return {
-        state,
-        action,
-        reward: 5,
-      };
+    if (isWin(nextState)) return 5;
 
-    if (isDraw(nextState))
-      return createDefaultTrainingSample(state, action, nextState);
+    if (isDraw(nextState)) return defaultReward;
 
     const invertedNextState = invertState(nextState);
     const oponentAction = await this.strictPredict(invertedNextState);
     nextState[oponentAction] = FieldState.Circle;
 
-    if (isWin(nextState))
-      return {
-        state,
-        action,
-        reward: -1,
-      };
+    if (isWin(nextState)) return -1;
 
-    return createDefaultTrainingSample(state, action, nextState);
+    if (isDraw(nextState)) return defaultReward;
+
+    if (depth < maxQDepth) {
+      const nextAction = await this.strictPredict(nextState);
+      return (
+        defaultReward +
+        Math.pow(discountRate, depth + 1) *
+          (await this.getReward(nextState, nextAction, depth + 1))
+      );
+    }
+
+    return defaultReward;
   }
 }
 
