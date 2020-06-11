@@ -11,7 +11,7 @@ import styles from "./training-session.module.scss";
 
 type TrainingSessionProps = {
   trainingParameters: TrainingParameters;
-  onExit?(): void;
+  onCancel?(): void;
   onFinish?(): void;
 };
 
@@ -23,7 +23,7 @@ export type TrainingState = {
 
 export const TrainingSession: React.FC<TrainingSessionProps> = ({
   trainingParameters,
-  onExit,
+  onCancel,
   onFinish,
 }) => {
   const asyncWrap = useAsyncWrap();
@@ -71,9 +71,20 @@ export const TrainingSession: React.FC<TrainingSessionProps> = ({
           </tr>
         </tbody>
       </table>
-      {onExit && (
+      {player && (
         <div>
-          <button onClick={onExit}>Stop training</button>
+          <button
+            onClick={() => {
+              player.finishTraining();
+            }}
+          >
+            Finish training
+          </button>
+        </div>
+      )}
+      {onCancel && (
+        <div>
+          <button onClick={onCancel}>Cancel training</button>
         </div>
       )}
     </div>

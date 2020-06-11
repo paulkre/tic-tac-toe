@@ -39,7 +39,7 @@ export const Training: React.FC = () => {
         {trainingParameters ? (
           <TrainingSession
             trainingParameters={trainingParameters}
-            onExit={handleCancel}
+            onCancel={handleCancel}
             onFinish={handleFinish}
           />
         ) : (

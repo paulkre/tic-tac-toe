@@ -46,11 +46,11 @@ export const ParameterForm: React.FC<ParameterFormProps> = ({
             />
           </div>
           <div>
-            <label htmlFor="sampleCount">Number of samples in one batch:</label>
+            <label htmlFor="batchSize">Number of samples in one batch:</label>
             <input
               type="number"
-              id="sampleCount"
-              name="sampleCount"
+              id="batchSize"
+              name="batchSize"
               value={values.batchSize}
               onChange={handleChange}
               onBlur={handleBlur}
