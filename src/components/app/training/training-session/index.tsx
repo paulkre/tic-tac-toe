@@ -58,6 +58,10 @@ export const TrainingSession: React.FC<TrainingSessionProps> = ({
       <table>
         <tbody>
           <tr>
+            <th>Games played:</th>
+            <td>{gameCount}</td>
+          </tr>
+          <tr>
             <th>Samples recorded:</th>
             <td>
               {sampleCount} / {trainingParameters.batchSize}

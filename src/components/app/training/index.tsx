@@ -29,7 +29,7 @@ export const Training: React.FC = () => {
 
   return (
     <>
-      <Section title="Parameters">
+      <Section title="Configuration">
         <ParameterForm
           onSubmit={handleSubmit}
           disableSubmit={!!trainingParameters && !done}
@@ -43,10 +43,10 @@ export const Training: React.FC = () => {
             onFinish={handleFinish}
           />
         ) : (
-          <p>Submit the form to start the training.</p>
+          <p>Submit the form to start training.</p>
         )}
       </Section>
-      <Section title="Test Game">
+      <Section title="Result">
         {done ? (
           <TrainingResult />
         ) : (
